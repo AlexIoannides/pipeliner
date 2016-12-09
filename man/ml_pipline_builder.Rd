@@ -2,7 +2,7 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{ml_pipline_builder}
 \alias{ml_pipline_builder}
-\title{Build Machine Learning Pipelines}
+\title{Build machine learning pipelines}
 \usage{
 ml_pipline_builder()
 }
@@ -10,6 +10,55 @@ ml_pipline_builder()
 
 }
 \description{
-Build Machine Learning Pipelines
+Building machine learning models often requires pre- and post-transformation of the input and/or
+response variables, prior to training (or fitting) the models. For example, a model may require
+training on the logarithm of the response and input variables. As a consequence, fitting and
+then generating predictions from these models requires repeated application of transformation and
+inverse-transormation functions, to go from the original input to original output variables (via
+the model).
+}
+\details{
+This function produces an object in which it is possible to: define transformation and
+inverse-transformation functions; fit a model on training data; and then generate a prediction
+(or model-scoring) function that automatically applies the entire pipeline of transformation and
+inverse-transformation to the inputs and outputs of the inner-model's predicted scores.
+
+Calling \code{ml_pipline_builder()} will return an 'ml_pipeline' object (actually an environment
+or closure), whose methods can be accessed as one would access any element of a list. For example,
+\code{ml_pipline_builder()$transform_features} will allow you to get or set the
+\code{transform_features} function to use the pipeline. The full list of methods are:
+
+\itemize{
+\item \code{transform_features} - a unary function of a data.frame that returns a new data.frame
+containing only the transformed input variables - an error will be thrown if this is not the
+case (unless the function has been left undefined).
+
+\item \code{transform_response} - a unary function of a data.frame that returns a new data.frame
+containing only the transformed response variables - an error will be thrown if this is not the
+case (unless the function has been left undefined).
+
+\code{inv_transform_response} - this is the inverse of the \code{transform_response} function, a
+unary function of a data.frame that takes raw model output and transforms it back into the space
+containing the original data, returning a data.frame containing only this variable. An error
+will be thrown if any of these criteria are not met (unless the function has been left
+undefined).
+
+\item \code{estimate_model} - a unary function of a data.frame that returns a fitted model
+object, which must have a \code{predict.{model-class}} defined and available in the enclosing
+environment. An error will be thrown if any of these criteria are not met.
+
+\item \code{pipeline_fit} - a unary function of the input data that will apply (if defined)
+\code{transform_features} and \code{transform_response}, before executing \code{estimate_model} to
+estimate the model and create the end-to-end model pipeline.
+
+\item \code{pipeline_predict} - returns the model prediction pipeline (otherwise NULL).
+
+\item \code{model_estimate} - returns the estimated inner model object used in the pipeline
+(otherwise NULL).
+}
+}
+\examples{
+\dontrun{
+}
 }
 
