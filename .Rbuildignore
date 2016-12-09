@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+
+^\.travis\.yml$
+.Rprofile
+man-roxygen
+^README\.Rmd$
+^appveyor\.yml$
+^cran-comments\.md$
+^README-.*\.png$
