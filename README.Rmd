@@ -13,3 +13,46 @@ This package is inspired by the machine learning pipelines used in Apache Spark,
 - define transformation and inverse-transformation functions; 
 - fit a model on training data; and then, 
 - generate a prediction (or model-scoring) function that automatically applies the entire pipeline of transformation and inverse-transformation to the inputs and outputs of the inner-model's predicted scores.
+
+## Example Usage
+We use the `faithful` dataset shipped with R, together with the `pipeliner` package to estimate a linear regression model for the eruption duration of Old Faithful as a function of the inter-eruption waiting time (duration). The transformations we apply to the input and response variables - before we estimate the model - are simple scaling by the mean and standard deviation (i.e. mapping the variables to z-scores).
+
+```{r build_pipeline}
+library(pipeliner)
+
+data <- faithful
+
+lm_pipeline <- ml_pipline_builder()
+
+lm_pipeline$transform_features <- function(df) { 
+  data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+}
+
+lm_pipeline$transform_response <- function(df) {
+  data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+}
+
+lm_pipeline$inv_transform_response <- function(df) { 
+  data.frame(pred_eruptions = df$pred * sd(df$eruptions) + mean(df$eruptions))
+}
+
+lm_pipeline$estimate_model <- function(df) { 
+  lm(y ~ 0 + x1, df)
+}
+
+lm_pipeline$pipeline_fit(data)
+```
+
+We can access the estimated inner model directly and compute summaries as usual.
+
+```{r inner_model_summary}
+summary(lm_pipeline$model_estimate)
+```
+
+Now that the pipeline has been estimated it is easy to generate predictions without having to handle transformation.
+
+```{r insample_predictions}
+in_sample_predictions <- lm_pipeline$pipeline_predict(data)
+head(in_sample_predictions)
+```
+
