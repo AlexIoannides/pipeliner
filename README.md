@@ -3,9 +3,9 @@
 Machine Learning Pipelines for R
 ================================
 
-Building machine learning models often requires pre- and post-transformation of the input and/or response variables, prior to training (or fitting) the models. For example, a model may require training on the logarithm of the response and input variables. As a consequence, fitting and then generating predictions from these models requires repeated application of transformation and inverse-transormation functions, to go from the original input to original output variables (via the model).
+Building machine learning models often requires pre- and post-transformation of the input and/or response variables, prior to training (or fitting) the models. For example, a model may require training on the logarithm of the response and input variables. As a consequence, fitting and then generating predictions from these models requires repeated application of transformation and inverse-transformation functions, to go from the original input to original output variables (via the model).
 
-This package is inspired by the machine learning pipelines used in Apache Spark, and provides a common intfernace with which it is possible to:
+This package is inspired by the machine learning pipelines used in Apache Spark, and provides a common interface with which it is possible to:
 
 -   define transformation and inverse-transformation functions;
 -   fit a model on training data; and then,
@@ -66,7 +66,7 @@ summary(lm_pipeline$model_estimate)
     ## Multiple R-squared:  0.8115, Adjusted R-squared:  0.8108 
     ## F-statistic:  1166 on 1 and 271 DF,  p-value: < 2.2e-16
 
-Now that the pipeline has been estimated it is easy to generate predictions without having to handle transformation.
+Now that the pipeline has been estimated it is easy to generate predictions without having to handle transformations explicitly.
 
 ``` r
 in_sample_predictions <- lm_pipeline$pipeline_predict(data)

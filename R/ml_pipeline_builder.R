@@ -117,16 +117,20 @@ ml_pipline_builder <- function() {
   pipeline_fit <- function(data) {
     check_data_frame_throw_error(data, "data")
 
+    check_unary_func_throw_error(transform_features, "transform_features()")
     model_features <- transform_features(data)
     check_data_frame_throw_error(model_features, "transform_features()")
 
+    check_unary_func_throw_error(transform_response, "transform_response()")
     model_response <- transform_response(data)
     check_data_frame_throw_error(model_features, "transform_response()")
 
     model_data <- do.call(cbind,
                           Filter(function(x) !is.null(x), list(data, model_features, model_response)))
 
+    check_unary_func_throw_error(estimate_model, "estimate_model()")
     model_estimate <<- estimate_model(model_data)
+    check_predict_method_throw_error(model_estimate)
 
     # assemble and set the pipeline prediction object
     pipeline_predict <<- function(data) {
@@ -138,6 +142,8 @@ ml_pipline_builder <- function() {
 
       model_predictions <- data.frame("pred" = stats::predict(model_estimate, model_data))
       model_data <- cbind(model_data, model_predictions)
+
+      check_unary_func_throw_error(inv_transform_response, "inv_transform_response()")
       transformed_predictions <- inv_transform_response(model_data)
       check_data_frame_throw_error(transformed_predictions, "inv_transform_response()")
 
@@ -150,12 +156,12 @@ ml_pipline_builder <- function() {
 }
 
 
-#' Validate ml_pipeline_builder method returns data.frame
+#' Validate ml_pipeline_builder transform method returns data.frame
 #'
 #'
-#' Helper function that checks if the object returned from a \code{ml_pipeline_builder method} is
+#' Helper function that checks if the object returned from a \code{ml_pipeline_builder} method is
 #' data.frame (if it isn't NULL), and if it isn't, throws an error that is customised with the
-#' returning function name.
+#' returning name.
 #'
 #' @param func_return_object The object returned from a \code{ml_pipeline_builder} method.
 #' @param func_name The name of the function that returned the object.
@@ -172,7 +178,64 @@ ml_pipline_builder <- function() {
 #' }
 check_data_frame_throw_error <- function(func_return_object, func_name) {
   if (!is.null(func_return_object) & !is.data.frame(func_return_object)) {
-    stop(paste(func_name, "transform_response() does not produce a data.frame"))
+    stop(paste(func_name, "does not produce a data.frame."), call. = FALSE)
+  }
+
+  NULL
+}
+
+
+#' Validate ml_pipeline_builder transform method is a unary function
+#'
+#'
+#' Helper function that checks if a \code{ml_pipeline_builder} method is unary function (if it
+#' isn't a NULL returning function), and if it isn't, throws an error that is customised with the
+#' method function name.
+#'
+#' @param func A \code{ml_pipeline_builder} method.
+#' @param func_name The name of the \code{ml_pipeline_builder} method.
+#'
+#' @return NULL
+#'
+#' @examples
+#' \dontrun{
+#' transform_method <- function(df) df
+#' check_unary_func_throw_error(transform_method, "transform_method")
+#' # NULL
+#' }
+check_unary_func_throw_error <- function(func, func_name) {
+  if (!is.null(body(func)) & !(length(formals(func)) == 1)) {
+    stop(paste(func_name, "is not a unary function."), call. = FALSE)
+  }
+
+  NULL
+}
+
+
+#' Validate ml_pipeline_builder transform method returns data.frame
+#'
+#'
+#' Helper function that checks if the object returned from a \code{ml_pipeline_builder} method is
+#' data.frame (if it isn't NULL), and if it isn't, throws an error that is customised with the
+#' returning name.
+#'
+#' @param func_return_object The object returned from a \code{ml_pipeline_builder} method.
+#' @param func_name The name of the function that returned the object.
+#'
+#' @return NULL
+#'
+#' @examples
+#' \dontrun{
+#' estimation_method <- function(df) lm(eruptions ~ 0 + waiting, df)
+#' data <- faithful
+#' model_estimate <- estimation_method(data)
+#' check_predict_method_throw_error(model_estimate)
+#' # NULL
+#' }
+check_predict_method_throw_error <- function(func_return_object) {
+  if (!is.null(func_return_object) & !exists(paste0("predict.", class(func_return_object)))) {
+    stop("estimate_model() method does not return an object with a predict.{class-name} method.",
+         call. = FALSE)
   }
 
   NULL
