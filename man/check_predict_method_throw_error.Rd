@@ -2,19 +2,16 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{check_predict_method_throw_error}
 \alias{check_predict_method_throw_error}
-\title{Validate ml_pipeline_builder transform method returns data.frame}
+\title{Validate estimate_model method returns an object with a \code{predict} method defined}
 \usage{
 check_predict_method_throw_error(func_return_object)
 }
 \arguments{
-\item{func_return_object}{The object returned from a \code{ml_pipeline_builder} method.}
-
-\item{func_name}{The name of the function that returned the object.}
+\item{func_return_object}{The object returned from the \code{estimate_model} method.}
 }
 \description{
-Helper function that checks if the object returned from a \code{ml_pipeline_builder} method is
-data.frame (if it isn't NULL), and if it isn't, throws an error that is customised with the
-returning name.
+Helper function that checks if the object returned from the \code{estimate_model} method has
+a \code{predict} method defined for it.
 }
 \examples{
 \dontrun{

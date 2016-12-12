@@ -24,35 +24,42 @@ data <- faithful
 
 lm_pipeline <- ml_pipline_builder()
 
-lm_pipeline$transform_features <- function(df) { 
+lm_pipeline$transform_features(function(df) { 
   data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
-}
+})
 
-lm_pipeline$transform_response <- function(df) {
+lm_pipeline$transform_response(function(df) {
   data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
-}
+})
 
-lm_pipeline$inv_transform_response <- function(df) { 
-  data.frame(pred_eruptions = df$pred * sd(df$eruptions) + mean(df$eruptions))
-}
+lm_pipeline$inv_transform_response(function(df) { 
+  data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+})
 
-lm_pipeline$estimate_model <- function(df) { 
+lm_pipeline$estimate_model(function(df) { 
   lm(y ~ 0 + x1, df)
-}
+})
 
-lm_pipeline$pipeline_fit(data)
+lm_pipeline$fit(data)
 ```
 
 We can access the estimated inner model directly and compute summaries as usual.
 
 ```{r inner_model_summary}
-summary(lm_pipeline$model_estimate)
+summary(lm_pipeline$model_estimate())
 ```
 
 Now that the pipeline has been estimated it is easy to generate predictions without having to handle transformations explicitly.
 
 ```{r insample_predictions}
-in_sample_predictions <- lm_pipeline$pipeline_predict(data)
+in_sample_predictions <- lm_pipeline$predict(data)
+head(in_sample_predictions)
+```
+
+Alternatively, we provde a `predict` method for estimated pipelines, that works like the `predict` methods for any other R model.
+
+```{r}
+in_sample_predictions <- predict(lm_pipeline, data)
 head(in_sample_predictions)
 ```
 
