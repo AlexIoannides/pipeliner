@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{pipeline}
 \alias{pipeline}
-\title{Fit and yield a machine learning pipeline}
+\title{Build machine learning pipelines - functional API}
 \usage{
 pipeline(.data, ...)
 }
@@ -18,7 +18,15 @@ A \code{"ml_pipeline"} object contaiing the pipeline prediction function
 \code{ml_pipeline$inner_model()}.
 }
 \description{
-Function that takes individual pipeline sections - functions with class
+Building machine learning models often requires pre- and post-transformation of the input and/or
+response variables, prior to training (or fitting) the models. For example, a model may require
+training on the logarithm of the response and input variables. As a consequence, fitting and
+then generating predictions from these models requires repeated application of transformation and
+inverse-transormation functions, to go from the original input to original output variables (via
+the model).
+}
+\details{
+This function that takes individual pipeline sections - functions with class
 \code{"ml_pipeline_section"} - together with the data required to estimate the inner models,
 returning a machine pipeline capable of predicting (scoring) data end-to-end, without having to
 repeatedly apply input variable (feature and response) transformation and their inverses.

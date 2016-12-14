@@ -178,9 +178,16 @@ inv_transform_response <- function(.f) {
 }
 
 
-#' Fit and yield a machine learning pipeline
+#' Build machine learning pipelines - functional API
 #'
-#' Function that takes individual pipeline sections - functions with class
+#' Building machine learning models often requires pre- and post-transformation of the input and/or
+#' response variables, prior to training (or fitting) the models. For example, a model may require
+#' training on the logarithm of the response and input variables. As a consequence, fitting and
+#' then generating predictions from these models requires repeated application of transformation and
+#' inverse-transormation functions, to go from the original input to original output variables (via
+#' the model).
+#'
+#' This function that takes individual pipeline sections - functions with class
 #' \code{"ml_pipeline_section"} - together with the data required to estimate the inner models,
 #' returning a machine pipeline capable of predicting (scoring) data end-to-end, without having to
 #' repeatedly apply input variable (feature and response) transformation and their inverses.
@@ -277,7 +284,7 @@ pipeline <- function(.data, ...) {
 }
 
 
-#' Build machine learning pipelines
+#' Build machine learning pipelines - object oriented API
 #'
 #' Building machine learning models often requires pre- and post-transformation of the input and/or
 #' response variables, prior to training (or fitting) the models. For example, a model may require
@@ -294,40 +301,29 @@ pipeline <- function(.data, ...) {
 #' Calling \code{ml_pipline_builder()} will return an 'ml_pipeline' object (actually an environment
 #' or closure), whose methods can be accessed as one would access any element of a list. For example,
 #' \code{ml_pipline_builder()$transform_features} will allow you to get or set the
-#' \code{transform_features} function to use the pipeline. The full list of methods are:
-#'
+#' \code{transform_features} function to use the pipeline. The full list of methods for defining
+#' sections of the pipeline (documented elsewhere) are:
 #' \itemize{
-#' \item \code{transform_features} - a unary function of a data.frame that returns a new data.frame
-#' containing only the transformed input variables - an error will be thrown if this is not the
-#' case (unless the function has been left undefined).
+#' \item \code{transform_features};
+#' \item \code{transform_response};
+#' \item \code{inv_transform_response}; and,
+#' \item \code{estimate_model};
+#' }
 #'
-#' \item \code{transform_response} - a unary function of a data.frame that returns a new data.frame
-#' containing only the transformed response variables - an error will be thrown if this is not the
-#' case (unless the function has been left undefined).
-#'
-#' \code{inv_transform_response} - this is the inverse of the \code{transform_response} function, a
-#' unary function of a data.frame that takes raw model output and transforms it back into the space
-#' containing the original data, returning a data.frame containing only this variable. An error
-#' will be thrown if any of these criteria are not met (unless the function has been left
-#' undefined).
-#'
-#' \item \code{estimate_model} - a unary function of a data.frame that returns a fitted model
-#' object, which must have a \code{predict.{model-class}} defined and available in the enclosing
-#' environment. An error will be thrown if any of these criteria are not met.
-#'
-#' \item \code{pipeline_fit} - a unary function of the input data that will apply (if defined)
-#' \code{transform_features} and \code{transform_response}, before executing \code{estimate_model} to
-#' estimate the model and create the end-to-end model pipeline.
-#'
-#' \item \code{pipeline_predict} - returns the model prediction pipeline (otherwise NULL).
-#'
-#' \item \code{model_estimate} - returns the estimated inner model object used in the pipeline
-#' (otherwise NULL).
+#' The pipeline can be fit, prediction generated and the inner model accessed using the following
+#' methods:
+#' \itemize{
+#' \item \code{fit(.data)};
+#' \item \code{predict(.data)}; and,
+#' \item \code{model_estimate()}.
 #' }
 #'
 #' @export
 #'
 #' @return An object of class \code{ml_pipeline}.
+#'
+#' @seealso \code{\link{transform_features}}, \code{\link{transform_response}},
+#' \code{\link{estimate_model}} and \code{\link{inv_transform_response}}.
 #'
 #' @examples
 #' data <- faithful
@@ -446,6 +442,11 @@ ml_pipline_builder <- function() {
 #' head(in_sample_predictions)
 #' # [1] 4.100592 2.209893 3.722452 2.814917 4.554360 2.285521
 predict.ml_pipeline <- function(object, data, verbose = FALSE, pred_var = "pred_model", ...) {
+  if (is.null(object$predict)) {
+    stop("predict method not available - check estimation has successfully estimated a model.",
+         call. = FALSE)
+  }
+
   if (verbose) {
     object$predict(data, verbose, pred_var, ...)
   } else {

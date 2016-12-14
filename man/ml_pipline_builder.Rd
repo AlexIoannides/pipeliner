@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{ml_pipline_builder}
 \alias{ml_pipline_builder}
-\title{Build machine learning pipelines}
+\title{Build machine learning pipelines - object oriented API}
 \usage{
 ml_pipline_builder()
 }
@@ -26,35 +26,21 @@ inverse-transformation to the inputs and outputs of the inner-model's predicted 
 Calling \code{ml_pipline_builder()} will return an 'ml_pipeline' object (actually an environment
 or closure), whose methods can be accessed as one would access any element of a list. For example,
 \code{ml_pipline_builder()$transform_features} will allow you to get or set the
-\code{transform_features} function to use the pipeline. The full list of methods are:
-
+\code{transform_features} function to use the pipeline. The full list of methods for defining
+sections of the pipeline (documented elsewhere) are:
 \itemize{
-\item \code{transform_features} - a unary function of a data.frame that returns a new data.frame
-containing only the transformed input variables - an error will be thrown if this is not the
-case (unless the function has been left undefined).
+\item \code{transform_features};
+\item \code{transform_response};
+\item \code{inv_transform_response}; and,
+\item \code{estimate_model};
+}
 
-\item \code{transform_response} - a unary function of a data.frame that returns a new data.frame
-containing only the transformed response variables - an error will be thrown if this is not the
-case (unless the function has been left undefined).
-
-\code{inv_transform_response} - this is the inverse of the \code{transform_response} function, a
-unary function of a data.frame that takes raw model output and transforms it back into the space
-containing the original data, returning a data.frame containing only this variable. An error
-will be thrown if any of these criteria are not met (unless the function has been left
-undefined).
-
-\item \code{estimate_model} - a unary function of a data.frame that returns a fitted model
-object, which must have a \code{predict.{model-class}} defined and available in the enclosing
-environment. An error will be thrown if any of these criteria are not met.
-
-\item \code{pipeline_fit} - a unary function of the input data that will apply (if defined)
-\code{transform_features} and \code{transform_response}, before executing \code{estimate_model} to
-estimate the model and create the end-to-end model pipeline.
-
-\item \code{pipeline_predict} - returns the model prediction pipeline (otherwise NULL).
-
-\item \code{model_estimate} - returns the estimated inner model object used in the pipeline
-(otherwise NULL).
+The pipeline can be fit, prediction generated and the inner model accessed using the following
+methods:
+\itemize{
+\item \code{fit(.data)};
+\item \code{predict(.data)}; and,
+\item \code{model_estimate()}.
 }
 }
 \examples{
@@ -88,5 +74,9 @@ head(lm_pipeline$predict(data))
 #  5     4.533      85  1.0373644  0.9344694       4.554360
 #  6     2.883      55 -1.1693335 -1.0533487       2.285521
 
+}
+\seealso{
+\code{\link{transform_features}}, \code{\link{transform_response}},
+\code{\link{estimate_model}} and \code{\link{inv_transform_response}}.
 }
 
