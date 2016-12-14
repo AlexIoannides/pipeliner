@@ -11,8 +11,8 @@ This package is inspired by the machine learning pipelines used in Apache Spark,
 -   fit a model on training data; and then,
 -   generate a prediction (or model-scoring) function that automatically applies the entire pipeline of transformation and inverse-transformation to the inputs and outputs of the inner-model's predicted scores.
 
-Example Usage
--------------
+Example Usage - OO API
+----------------------
 
 We use the `faithful` dataset shipped with R, together with the `pipeliner` package to estimate a linear regression model for the eruption duration of Old Faithful as a function of the inter-eruption waiting time (duration). The transformations we apply to the input and response variables - before we estimate the model - are simple scaling by the mean and standard deviation (i.e. mapping the variables to z-scores).
 
@@ -73,13 +73,13 @@ in_sample_predictions <- lm_pipeline$predict(data)
 head(in_sample_predictions)
 ```
 
-    ##   eruptions waiting         x1 pred_model pred_eruptions
-    ## 1     3.600      79  0.5960248  0.5369058       4.100592
-    ## 2     1.800      54 -1.2428901 -1.1196093       2.209893
-    ## 3     3.333      74  0.2282418  0.2056028       3.722452
-    ## 4     2.283      62 -0.6544374 -0.5895245       2.814917
-    ## 5     4.533      85  1.0373644  0.9344694       4.554360
-    ## 6     2.883      55 -1.1693335 -1.0533487       2.285521
+    ##   eruptions waiting         x1           y pred_model pred_eruptions
+    ## 1     3.600      79  0.5960248  0.09831763  0.5369058       4.100592
+    ## 2     1.800      54 -1.2428901 -1.47873278 -1.1196093       2.209893
+    ## 3     3.333      74  0.2282418 -0.13561152  0.2056028       3.722452
+    ## 4     2.283      62 -0.6544374 -1.05555759 -0.5895245       2.814917
+    ## 5     4.533      85  1.0373644  0.91575542  0.9344694       4.554360
+    ## 6     2.883      55 -1.1693335 -0.52987412 -1.0533487       2.285521
 
 Alternatively, we provde a `predict` method for estimated pipelines, that works like the `predict` methods for any other R model.
 
@@ -89,3 +89,42 @@ head(in_sample_predictions)
 ```
 
     ## [1] 3.600 1.800 3.333 2.283 4.533 2.883
+
+Example Usage - Functional API
+------------------------------
+
+As a functional alternative to the above,
+
+``` r
+library(magrittr)
+
+lm_pipeline <- data %>% 
+  pipeline(
+    transform_features(function(df) { 
+      data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+    }),
+    
+    transform_response(function(df) {
+      data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+    }),
+    
+    estimate_model(function(df) { 
+      lm(y ~ 1 + x1, df)
+    }),
+    
+    inv_transform_response(function(df) { 
+      data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+    })
+  )
+
+more_predictions <- predict(lm_pipeline, verbose = TRUE, data)  
+head(more_predictions)
+```
+
+    ##   eruptions waiting         x1           y pred_model pred_eruptions
+    ## 1     3.600      79  0.5960248  0.09831763  0.5369058       4.100592
+    ## 2     1.800      54 -1.2428901 -1.47873278 -1.1196093       2.209893
+    ## 3     3.333      74  0.2282418 -0.13561152  0.2056028       3.722452
+    ## 4     2.283      62 -0.6544374 -1.05555759 -0.5895245       2.814917
+    ## 5     4.533      85  1.0373644  0.91575542  0.9344694       4.554360
+    ## 6     2.883      55 -1.1693335 -0.52987412 -1.0533487       2.285521

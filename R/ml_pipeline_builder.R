@@ -13,6 +13,177 @@
 # limitations under the License.
 
 
+#' Title
+#'
+#' @param .f
+#'
+#' @return
+#' @export
+#'
+#' @examples
+transform_features <- function(.f) {
+  check_unary_func_throw_error(.f, "transform_features()")
+  g <- function(df_in) {
+    check_data_frame_throw_error(df_in)
+    df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_features()")
+    cbind(df_in, df_out)
+  }
+
+  structure(g, class = c("transform_features", "ml_pipeline_section"))
+}
+
+
+#' Title
+#'
+#' @param .f
+#'
+#' @return
+#' @export
+#'
+#' @examples
+transform_response <- function(.f) {
+  check_unary_func_throw_error(.f, "transform_response()")
+  g <- function(df_in) {
+    check_data_frame_throw_error(df_in)
+    df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_response()")
+    cbind(df_in, df_out)
+  }
+
+  structure(g, class = c("transform_response", "ml_pipeline_section"))
+}
+
+
+#' Title
+#'
+#' @param .f
+#'
+#' @return
+#' @export
+#'
+#' @examples
+estimate_model <- function(.f) {
+  check_unary_func_throw_error(.f, "estimate_model()")
+  g <- function(df_in) {
+    check_data_frame_throw_error(df_in)
+    model_out <- .f(df_in)
+    check_predict_method_throw_error(model_out)
+    model_out
+  }
+
+  structure(g, class = c("estimate_model", "ml_pipeline_section"))
+}
+
+
+predict_model <- function(.m) {
+#' Title
+#'
+#' @param df_in
+#' @param pred_var
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+  g <- function(df_in, pred_var = "pred_model", ...) {
+    check_data_frame_throw_error(df_in)
+    df_out <- setNames(data.frame(stats::predict(.m, df_in, ...)), pred_var)
+    cbind(df_in, df_out)
+  }
+
+  structure(g, class = c("predict_model", "ml_pipeline_section"))
+}
+
+
+#' Title
+#'
+#' @param .f
+#'
+#' @return
+#' @export
+#'
+#' @examples
+inv_transform_response <- function(.f) {
+  check_unary_func_throw_error(.f, "inv_transform_response()")
+  g <- function(df_in) {
+    check_data_frame_throw_error(df_in)
+    df_out <- process_transform_throw_error(df_in, .f(df_in), "inv_transform_response()")
+    cbind(df_in, df_out)
+  }
+
+  structure(g, class = c("inv_transform_response", "ml_pipeline_section"))
+}
+
+
+#' Title
+#'
+#' @param .data
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+pipeline <- function(.data, ...) {
+  check_data_frame_throw_error(.data)
+
+  # analyse defined pipline sections
+  args <- list(...)
+  pipes <- Filter(function(x) "ml_pipeline_section" %in% class(x), args)
+  pipe_classes <- Map(function(x) class(x)[!(class(x) %in% "ml_pipeline_section")], pipes)
+
+  if (length(unique(pipe_classes)) != length(pipe_classes)) {
+    stop("multiple pipeline sections of the same type found - remove from pipe.", call. = FALSE)
+  } else {
+    names(pipes) <- pipe_classes
+  }
+
+  if (is.null(pipes$estimate_model)) stop("estimate_model() undefined", call. = FALSE)
+
+  if (!is.null(pipes$transform_response) & is.null(pipes$inv_transform_response) |
+      is.null(pipes$transform_response) & !is.null(pipes$inv_transform_response))  {
+    stop("tranform_response() and inv_transform_response() not defined as a pair", call. = FALSE)
+  }
+
+  null_pipeline <- Map(function(x) { function(df) df }, vector(mode = "list", length = 4))
+  names(null_pipeline) <- c("transform_features", "transform_response", "estimate_model",
+                            "inv_transform_response")
+
+  full_pipeline <- Map(function(x) if (is.null(pipes[[x]])) null_pipeline[[x]] else pipes[[x]],
+                       names(null_pipeline))
+
+  # estimate model and build prediction pipeline
+  inner_model <- full_pipeline$estimate_model(
+    full_pipeline$transform_response(
+      full_pipeline$transform_features(.data)
+    )
+  )
+
+  predict_pipeline <- function(df, verbose = TRUE, pred_var = "pred_model", ...) {
+    verbose_output <-
+      full_pipeline$inv_transform_response(
+        predict_model(inner_model)(
+          full_pipeline$transform_response(
+            full_pipeline$transform_features(df)
+          ),
+          pred_var,
+          ...
+        )
+      )
+
+    if (verbose) {
+      return(verbose_output)
+    } else {
+      return(verbose_output[dim(verbose_output)[2]])
+    }
+  }
+
+  # return pipeline object
+  interface <- list("predict" = predict_pipeline, "inner_model" = inner_model)
+  structure(interface, class = "ml_pipeline")
+}
+
+
 #' Build machine learning pipelines
 #'
 #' Building machine learning models often requires pre- and post-transformation of the input and/or
@@ -97,92 +268,48 @@
 #' #  6     2.883      55 -1.1693335 -1.0533487       2.285521
 #'
 ml_pipline_builder <- function() {
-  # # capture the contents of the local environment
-  # this <- environment()
-
   # define inner fields for estimated models and pipeline prediction functions
   model_estimate_inner <- NULL
   predict_inner <- NULL
 
   # define inner methods for transformation and estimation that need to be set
-  transform_features_inner <- function(df) NULL
-  transform_response_inner <- function(df) NULL
-  inv_transform_response_inner <- function(df) NULL
-  estimate_model_inner <- function(df) NULL
+  transform_features_inner <- NULL
+  transform_response_inner <- NULL
+  inv_transform_response_inner <- NULL
+  estimate_model_inner <- NULL
 
   # define interface for setting transformation and estimation methods
   model_estimate <- function() {
     model_estimate_inner
   }
 
-  predict <- function(data, verbose_data_frame = TRUE, ...) {
-    predict_inner(data, verbose_data_frame = TRUE, ...)
+  predict <- function(data, verbose = TRUE, pred_var = "pred_model", ...) {
+    predict_inner(data, verbose = TRUE, pred_var, ...)
   }
 
   transform_features <- function(f) {
-    check_unary_func_throw_error(f, "transform_features()")
-    transform_features_inner <<- function(df) {
-      new_df <- f(df)
-      process_transform_throw_error(df, new_df, "transform_features()")
-    }
+    transform_features_inner <<- get("transform_features", envir = parent.frame())(f)
   }
 
   transform_response <- function(f) {
-    check_unary_func_throw_error(f, "transform_response()")
-    transform_response_inner <<- function(df) {
-      new_df <- f(df)
-      process_transform_throw_error(df, new_df, "transform_response()")    }
+    transform_response_inner <<- get("transform_response", envir = parent.frame())(f)
   }
 
   inv_transform_response <- function(f) {
-    check_unary_func_throw_error(f, "inv_transform_response()")
-    inv_transform_response_inner <<- function(df) {
-      new_df <- f(df)
-      process_transform_throw_error(df, new_df, "inv_transform_response()")    }
+    inv_transform_response_inner <<- get("inv_transform_response", envir = parent.frame())(f)
   }
 
   estimate_model <- function(f) {
-    check_unary_func_throw_error(f, "estimate_model()")
-    estimate_model_inner <<- function(df) {
-      new_model <- f(df)
-      check_predict_method_throw_error(new_model)
-      new_model
-    }
+    estimate_model_inner <<- get("estimate_model", envir = parent.frame())(f)
   }
 
   # method for fitting the pipeline and which creates and sets the model pipeline
   fit <- function(data) {
-    check_data_frame_throw_error(data, "data")
+    pipeline_object <- pipeline(data, transform_features_inner, transform_response_inner,
+                                inv_transform_response_inner, estimate_model_inner)
 
-    model_features <- transform_features_inner(data)
-    model_response <- transform_response_inner(data)
-
-    model_data <- do.call(cbind,
-                          Filter(function(x) !is.null(x), list(data, model_features, model_response)))
-
-    model_estimate_inner <<- estimate_model_inner(model_data)
-
-    # assemble and set the pipeline prediction object
-    predict_inner <<- function(data, verbose_data_frame = TRUE, ...) {
-      check_data_frame_throw_error(data, "data")
-
-      model_features <- transform_features_inner(data)
-      model_data <- do.call(cbind,
-                            Filter(function(x) !is.null(x), list(data, model_features)))
-
-      model_predictions <- data.frame("pred_model" = stats::predict(model_estimate_inner, model_data, ...))
-      model_data <- cbind(model_data, model_predictions)
-      transformed_predictions <- inv_transform_response_inner(model_data)
-
-      verbose_output <- do.call(cbind, Filter(function(x) !is.null(x), list(model_data,
-        transformed_predictions)))
-
-      if (verbose_data_frame) {
-        return(verbose_output)
-      } else {
-        return(verbose_output[dim(verbose_output)[2]])
-      }
-    }
+    model_estimate_inner <<- pipeline_object$inner_model
+    predict_inner <<- pipeline_object$predict
   }
 
   # return the object
@@ -217,8 +344,12 @@ ml_pipline_builder <- function() {
 #' # 1 -1.26 -0.6440193 -0.9355810
 #' # 2  1.24  1.7833237  1.0335936
 #' # 3  0.54 -0.5590672  0.4822247
-predict.ml_pipeline <- function(pipeline_object, new_data, ...) {
-  pipeline_object$predict(new_data, verbose_data_frame = FALSE, ...)[[1]]
+predict.ml_pipeline <- function(pipeline, data, verbose = FALSE, pred_var = "pred_model", ...) {
+  if (verbose) {
+    pipeline$predict(data, verbose, pred_var, ...)
+  } else {
+    pipeline$predict(data, verbose, pred_var, ...)[[1]]
+  }
 }
 
 
@@ -358,5 +489,3 @@ check_predict_method_throw_error <- function(func_return_object) {
 
   NULL
 }
-
-

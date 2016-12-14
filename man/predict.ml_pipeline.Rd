@@ -4,15 +4,16 @@
 \alias{predict.ml_pipeline}
 \title{Predict method for ML pipelines}
 \usage{
-\method{predict}{ml_pipeline}(pipeline_object, new_data, ...)
+\method{predict}{ml_pipeline}(pipeline, data, verbose = FALSE,
+  pred_var = "pred_model", ...)
 }
 \arguments{
+\item{...}{Any additional arguements than need to be passed to the underlying model's predict
+methods.}
+
 \item{pipeline_object}{An estimated pipleine object of class \code{ml_pipeline}.}
 
 \item{new_data}{A data.frame in which to look for variables with which to predict.}
-
-\item{...}{Any additional arguements than need to be passed to the underlying model's predict
-methods.}
 }
 \value{
 A data.frame containing the predicted values, input variables, as well as any interim

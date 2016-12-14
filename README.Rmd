@@ -14,7 +14,7 @@ This package is inspired by the machine learning pipelines used in Apache Spark,
 - fit a model on training data; and then, 
 - generate a prediction (or model-scoring) function that automatically applies the entire pipeline of transformation and inverse-transformation to the inputs and outputs of the inner-model's predicted scores.
 
-## Example Usage
+## Example Usage - OO API
 We use the `faithful` dataset shipped with R, together with the `pipeliner` package to estimate a linear regression model for the eruption duration of Old Faithful as a function of the inter-eruption waiting time (duration). The transformations we apply to the input and response variables - before we estimate the model - are simple scaling by the mean and standard deviation (i.e. mapping the variables to z-scores).
 
 ```{r build_pipeline}
@@ -61,5 +61,34 @@ Alternatively, we provde a `predict` method for estimated pipelines, that works 
 ```{r}
 in_sample_predictions <- predict(lm_pipeline, data)
 head(in_sample_predictions)
+```
+
+## Example Usage - Functional API
+As a functional alternative to the above,
+
+```{r}
+library(magrittr)
+
+lm_pipeline <- data %>% 
+  pipeline(
+    transform_features(function(df) { 
+      data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+    }),
+    
+    transform_response(function(df) {
+      data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+    }),
+    
+    estimate_model(function(df) { 
+      lm(y ~ 1 + x1, df)
+    }),
+    
+    inv_transform_response(function(df) { 
+      data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+    })
+  )
+
+more_predictions <- predict(lm_pipeline, verbose = TRUE, data)  
+head(more_predictions)
 ```
 
