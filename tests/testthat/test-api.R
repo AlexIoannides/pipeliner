@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-context('ml_pipeline_builder')
+context('api')
 
 
 test_that("check_data_frame_throw_error doesn't throw an error when the object is a data.frame", {
