@@ -2,14 +2,37 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{estimate_model}
 \alias{estimate_model}
-\title{Title}
+\title{Estimate machine learning model}
 \usage{
 estimate_model(.f)
 }
 \arguments{
-\item{.f}{}
+\item{.f}{A unary function of a data.frame that returns a fitted model object, which must have
+a \code{predict.{model-class}} defined and available in the enclosing environment. An error will
+be thrown if any of these criteria are not met.}
+}
+\value{
+A unary function of a data.frame that returns a fitted model object that has a
+\code{predict.{model-class}} defined This function is assigned the classes
+\code{"estimate_model"} and \code{"ml_pipeline_section"}.
 }
 \description{
-Title
+A function that takes as its arguement another function defining how a machine learning model
+should be estimated based on the variables available in the input data frame. This function is
+wrapped (or adapted) for use within a machine learning pipeline.
+}
+\examples{
+data <- head(faithful)
+f <- estimate_model(function(df) {
+  lm(eruptions ~ 1 + waiting, df)
+})
+
+f(data)
+# Call:
+#   lm(formula = eruptions ~ 1 + waiting, data = df)
+#
+# Coefficients:
+# (Intercept)      waiting
+#    -1.53317      0.06756
 }
 

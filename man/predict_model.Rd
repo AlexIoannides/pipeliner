@@ -2,14 +2,37 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{predict_model}
 \alias{predict_model}
-\title{Title}
+\title{Generate machine learning model prediction}
 \usage{
 predict_model(.m)
 }
 \arguments{
-\item{...}{}
+\item{.m}{An estimated machine lerning model.}
+}
+\value{
+A unary function of a data.frame that returns the input data.frame with the predicted
+response variable column appended. This function is assigned the classes
+\code{"predict_model"} and \code{"ml_pipeline_section"}.
 }
 \description{
-Title
+A helper function that takes as its arguement an estimated machine learning model and returns a
+prediction function for use within a machine learning pipeline.
+}
+\examples{
+\dontrun{
+data <- head(faithful)
+m <- estimate_model(function(df) {
+  lm(eruptions ~ 1 + waiting, df)
+})
+
+predict_model(m(data))(data, "pred_eruptions")
+#   eruptions waiting pred_eruptions
+# 1     3.600      79       3.803874
+# 2     1.800      54       2.114934
+# 3     3.333      74       3.466086
+# 4     2.283      62       2.655395
+# 5     4.533      85       4.209219
+# 6     2.883      55       2.182492
+}
 }
 

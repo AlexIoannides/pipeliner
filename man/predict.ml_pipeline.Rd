@@ -4,33 +4,43 @@
 \alias{predict.ml_pipeline}
 \title{Predict method for ML pipelines}
 \usage{
-\method{predict}{ml_pipeline}(pipeline, data, verbose = FALSE,
+\method{predict}{ml_pipeline}(object, data, verbose = FALSE,
   pred_var = "pred_model", ...)
 }
 \arguments{
+\item{object}{An estimated pipleine object of class \code{ml_pipeline}.}
+
+\item{data}{A data.frame in which to look for input variables with which to predict.}
+
+\item{verbose}{Boolean - whether or not to return data.frame with all input and interim
+variables as well as predictions.}
+
+\item{pred_var}{Name to assign to for column of predictions from the 'raw' (or inner) model in
+the pipeline.}
+
 \item{...}{Any additional arguements than need to be passed to the underlying model's predict
 methods.}
-
-\item{pipeline_object}{An estimated pipleine object of class \code{ml_pipeline}.}
-
-\item{new_data}{A data.frame in which to look for variables with which to predict.}
 }
 \value{
-A data.frame containing the predicted values, input variables, as well as any interim
-tranformed variables.
+A vector of model predictions or scores (default); or, a data.frame containing the
+predicted values, input variables, as well as any interim tranformed variables.
 }
 \description{
 Predict method for ML pipelines
 }
 \examples{
-lm_pipeline <- ml_pipline_builder()
-lm_pipeline$estimate_model(function(df) lm(y ~ x, df))
-data <- data.frame(x = c(-1.26, 1.24, 0.54), y = 0.5 * c(-1.26, 1.24, 0.54) + rnorm(3))
-lm_pipeline$fit(data)
-predict(lm_pipeline, data)
-# x          y       pred
-# 1 -1.26 -0.6440193 -0.9355810
-# 2  1.24  1.7833237  1.0335936
-# 3  0.54 -0.5590672  0.4822247
+data <- faithful
+
+lm_pipeline <-
+  pipeline(
+    data,
+    estimate_model(function(df) {
+      lm(eruptions ~ 1 + waiting, df)
+    })
+  )
+
+in_sample_predictions <- predict(lm_pipeline, data)
+head(in_sample_predictions)
+# [1] 4.100592 2.209893 3.722452 2.814917 4.554360 2.285521
 }
 

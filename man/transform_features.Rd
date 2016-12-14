@@ -2,14 +2,36 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{transform_features}
 \alias{transform_features}
-\title{Title}
+\title{Transform machine learning feature variables}
 \usage{
 transform_features(.f)
 }
 \arguments{
-\item{.f}{}
+\item{.f}{A unary function of a data.frame that returns a new data.frame containing only the
+transformed feature variables. An error will be thrown if this is not the case.}
+}
+\value{
+A unary function of a data.frame that returns the input data.frame with the transformed
+feature variable columns appended. This function is assigned the classes
+\code{"transform_features"} and \code{"ml_pipeline_section"}.
 }
 \description{
-Title
+A function that takes as its arguement another function defining a set of feature variable
+transformations, and wraps (or adapts) it for use within a machine learning pipeline.
+}
+\examples{
+data <- head(faithful)
+f <- transform_features(function(df) {
+  data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+})
+
+f(data)
+#    eruptions waiting         x1
+#  1     3.600      79  0.8324308
+#  2     1.800      54 -1.0885633
+#  3     3.333      74  0.4482320
+#  4     2.283      62 -0.4738452
+#  5     4.533      85  1.2934694
+#  6     2.883      55 -1.0117236
 }
 

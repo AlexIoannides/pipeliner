@@ -2,14 +2,48 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{pipeline}
 \alias{pipeline}
-\title{Title}
+\title{Fit and yield a machine learning pipeline}
 \usage{
 pipeline(.data, ...)
 }
 \arguments{
-\item{...}{}
+\item{.data}{A data.frame containing the input variables required to fit the pipeline.}
+
+\item{...}{Functions of class \code{"ml_pipeline_section"} - e.g. \code{transform_features()},
+\code{transform_response()}, \code{inv_transform_response()} or \code{estimate_model()}.}
+}
+\value{
+A \code{"ml_pipeline"} object contaiing the pipeline prediction function
+\code{ml_pipeline$predict()} and the estimated machine learning model nested within it
+\code{ml_pipeline$inner_model()}.
 }
 \description{
-Title
+Function that takes individual pipeline sections - functions with class
+\code{"ml_pipeline_section"} - together with the data required to estimate the inner models,
+returning a machine pipeline capable of predicting (scoring) data end-to-end, without having to
+repeatedly apply input variable (feature and response) transformation and their inverses.
+}
+\examples{
+data <- faithful
+
+lm_pipeline <-
+  pipeline(
+    data,
+    transform_features(function(df) {
+      data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+    }),
+
+    transform_response(function(df) {
+      data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+    }),
+
+    estimate_model(function(df) {
+      lm(y ~ 1 + x1, df)
+    }),
+
+    inv_transform_response(function(df) {
+      data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+    })
+  )
 }
 

@@ -2,14 +2,36 @@
 % Please edit documentation in R/ml_pipeline_builder.R
 \name{transform_response}
 \alias{transform_response}
-\title{Title}
+\title{Transform machine learning response variable}
 \usage{
 transform_response(.f)
 }
 \arguments{
-\item{.f}{}
+\item{.f}{A unary function of a data.frame that returns a new data.frame containing only the
+transformed response variable. An error will be thrown if this is not the case.}
+}
+\value{
+A unary function of a data.frame that returns the input data.frame with the transformed
+response variable column appended. This function is assigned the classes
+\code{"transform_response"} and \code{"ml_pipeline_section"}.
 }
 \description{
-Title
+A function that takes as its arguement another function defining a response variable
+transformation, and wraps (or adapts) it for use within a machine learning pipeline.
+}
+\examples{
+data <- head(faithful)
+f <- transform_response(function(df) {
+  data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+})
+
+f(data)
+#   eruptions waiting         y
+# 1     3.600      79  0.5412808
+# 2     1.800      54 -1.3039946
+# 3     3.333      74  0.2675649
+# 4     2.283      62 -0.8088457
+# 5     4.533      85  1.4977485
+# 6     2.883      55 -0.1937539
 }
 

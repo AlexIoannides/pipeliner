@@ -13,14 +13,34 @@
 # limitations under the License.
 
 
-#' Title
+#' Transform machine learning feature variables
 #'
-#' @param .f
+#' A function that takes as its arguement another function defining a set of feature variable
+#' transformations, and wraps (or adapts) it for use within a machine learning pipeline.
 #'
-#' @return
 #' @export
 #'
+#' @param .f A unary function of a data.frame that returns a new data.frame containing only the
+#' transformed feature variables. An error will be thrown if this is not the case.
+#'
+#' @return A unary function of a data.frame that returns the input data.frame with the transformed
+#' feature variable columns appended. This function is assigned the classes
+#' \code{"transform_features"} and \code{"ml_pipeline_section"}.
+#'
 #' @examples
+#' data <- head(faithful)
+#' f <- transform_features(function(df) {
+#'   data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+#' })
+#'
+#' f(data)
+#' #    eruptions waiting         x1
+#' #  1     3.600      79  0.8324308
+#' #  2     1.800      54 -1.0885633
+#' #  3     3.333      74  0.4482320
+#' #  4     2.283      62 -0.4738452
+#' #  5     4.533      85  1.2934694
+#' #  6     2.883      55 -1.0117236
 transform_features <- function(.f) {
   check_unary_func_throw_error(.f, "transform_features()")
   g <- function(df_in) {
@@ -33,14 +53,34 @@ transform_features <- function(.f) {
 }
 
 
-#' Title
+#' Transform machine learning response variable
 #'
-#' @param .f
+#' A function that takes as its arguement another function defining a response variable
+#' transformation, and wraps (or adapts) it for use within a machine learning pipeline.
 #'
-#' @return
 #' @export
 #'
+#' @param .f A unary function of a data.frame that returns a new data.frame containing only the
+#' transformed response variable. An error will be thrown if this is not the case.
+#'
+#' @return A unary function of a data.frame that returns the input data.frame with the transformed
+#' response variable column appended. This function is assigned the classes
+#' \code{"transform_response"} and \code{"ml_pipeline_section"}.
+#'
 #' @examples
+#' data <- head(faithful)
+#' f <- transform_response(function(df) {
+#'   data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+#' })
+#'
+#' f(data)
+#' #   eruptions waiting         y
+#' # 1     3.600      79  0.5412808
+#' # 2     1.800      54 -1.3039946
+#' # 3     3.333      74  0.2675649
+#' # 4     2.283      62 -0.8088457
+#' # 5     4.533      85  1.4977485
+#' # 6     2.883      55 -0.1937539
 transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "transform_response()")
   g <- function(df_in) {
@@ -53,14 +93,35 @@ transform_response <- function(.f) {
 }
 
 
-#' Title
+#' Estimate machine learning model
 #'
-#' @param .f
+#' A function that takes as its arguement another function defining how a machine learning model
+#' should be estimated based on the variables available in the input data frame. This function is
+#' wrapped (or adapted) for use within a machine learning pipeline.
 #'
-#' @return
 #' @export
 #'
+#' @param .f A unary function of a data.frame that returns a fitted model object, which must have
+#' a \code{predict.{model-class}} defined and available in the enclosing environment. An error will
+#' be thrown if any of these criteria are not met.
+#'
+#' @return A unary function of a data.frame that returns a fitted model object that has a
+#' \code{predict.{model-class}} defined This function is assigned the classes
+#' \code{"estimate_model"} and \code{"ml_pipeline_section"}.
+#'
 #' @examples
+#' data <- head(faithful)
+#' f <- estimate_model(function(df) {
+#'   lm(eruptions ~ 1 + waiting, df)
+#' })
+#'
+#' f(data)
+#' # Call:
+#' #   lm(formula = eruptions ~ 1 + waiting, data = df)
+#' #
+#' # Coefficients:
+#' # (Intercept)      waiting
+#' #    -1.53317      0.06756
 estimate_model <- function(.f) {
   check_unary_func_throw_error(.f, "estimate_model()")
   g <- function(df_in) {
@@ -74,20 +135,37 @@ estimate_model <- function(.f) {
 }
 
 
-predict_model <- function(.m) {
-#' Title
+#' Generate machine learning model prediction
 #'
-#' @param df_in
-#' @param pred_var
-#' @param ...
+#' A helper function that takes as its arguement an estimated machine learning model and returns a
+#' prediction function for use within a machine learning pipeline.
 #'
-#' @return
-#' @export
+#' @param .m An estimated machine lerning model.
+#'
+#' @return A unary function of a data.frame that returns the input data.frame with the predicted
+#' response variable column appended. This function is assigned the classes
+#' \code{"predict_model"} and \code{"ml_pipeline_section"}.
 #'
 #' @examples
+#' \dontrun{
+#' data <- head(faithful)
+#' m <- estimate_model(function(df) {
+#'   lm(eruptions ~ 1 + waiting, df)
+#' })
+#'
+#' predict_model(m(data))(data, "pred_eruptions")
+#' #   eruptions waiting pred_eruptions
+#' # 1     3.600      79       3.803874
+#' # 2     1.800      54       2.114934
+#' # 3     3.333      74       3.466086
+#' # 4     2.283      62       2.655395
+#' # 5     4.533      85       4.209219
+#' # 6     2.883      55       2.182492
+#' }
+predict_model <- function(.m) {
   g <- function(df_in, pred_var = "pred_model", ...) {
     check_data_frame_throw_error(df_in)
-    df_out <- setNames(data.frame(stats::predict(.m, df_in, ...)), pred_var)
+    df_out <- stats::setNames(data.frame(stats::predict(.m, df_in, ...)), pred_var)
     cbind(df_in, df_out)
   }
 
@@ -95,14 +173,37 @@ predict_model <- function(.m) {
 }
 
 
-#' Title
+#' Inverse transform machine learning response variable
 #'
-#' @param .f
+#' A function that takes as its arguement another function defining a inverse response variable
+#' transformation, and wraps (or adapts) it for use within a machine learning pipeline.
 #'
-#' @return
 #' @export
 #'
+#' @param .f A unary function of a data.frame that returns a new data.frame containing only the
+#' inverse transformed response variable. An error will be thrown if this is not the case.
+#'
+#' @return A unary function of a data.frame that returns the input data.frame with the inverse
+#' transformed response variable column appended. This function is assigned the classes
+#' \code{"inv_transform_response"} and \code{"ml_pipeline_section"}.
+#'
 #' @examples
+#' data <- head(faithful)
+#' f1 <- transform_response(function(df) {
+#'   data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+#' })
+#' f2 <- inv_transform_response(function(df) {
+#'   data.frame(eruptions2 = df$y * sd(df$eruptions) + mean(df$eruptions))
+#' })
+#'
+#' f2(f1(data))
+#' #   eruptions waiting          y eruptions2
+#' # 1     3.600      79  0.5412808      3.600
+#' # 2     1.800      54 -1.3039946      1.800
+#' # 3     3.333      74  0.2675649      3.333
+#' # 4     2.283      62 -0.8088457      2.283
+#' # 5     4.533      85  1.4977485      4.533
+#' # 6     2.883      55 -0.1937539      2.883
 inv_transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "inv_transform_response()")
   g <- function(df_in) {
@@ -115,15 +216,45 @@ inv_transform_response <- function(.f) {
 }
 
 
-#' Title
+#' Fit and yield a machine learning pipeline
 #'
-#' @param .data
-#' @param ...
+#' Function that takes individual pipeline sections - functions with class
+#' \code{"ml_pipeline_section"} - together with the data required to estimate the inner models,
+#' returning a machine pipeline capable of predicting (scoring) data end-to-end, without having to
+#' repeatedly apply input variable (feature and response) transformation and their inverses.
 #'
-#' @return
 #' @export
 #'
+#' @param .data A data.frame containing the input variables required to fit the pipeline.
+#' @param ... Functions of class \code{"ml_pipeline_section"} - e.g. \code{transform_features()},
+#' \code{transform_response()}, \code{inv_transform_response()} or \code{estimate_model()}.
+#'
+#' @return A \code{"ml_pipeline"} object contaiing the pipeline prediction function
+#' \code{ml_pipeline$predict()} and the estimated machine learning model nested within it
+#' \code{ml_pipeline$inner_model()}.
+#'
 #' @examples
+#' data <- faithful
+#'
+#' lm_pipeline <-
+#'   pipeline(
+#'     data,
+#'     transform_features(function(df) {
+#'       data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+#'     }),
+#'
+#'     transform_response(function(df) {
+#'       data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+#'     }),
+#'
+#'     estimate_model(function(df) {
+#'       lm(y ~ 1 + x1, df)
+#'     }),
+#'
+#'     inv_transform_response(function(df) {
+#'       data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+#'     })
+#'   )
 pipeline <- function(.data, ...) {
   check_data_frame_throw_error(.data)
 
@@ -326,29 +457,37 @@ ml_pipline_builder <- function() {
 #'
 #' @export
 #'
-#' @param pipeline_object An estimated pipleine object of class \code{ml_pipeline}.
-#' @param new_data A data.frame in which to look for variables with which to predict.
+#' @param object An estimated pipleine object of class \code{ml_pipeline}.
+#' @param data A data.frame in which to look for input variables with which to predict.
+#' @param verbose Boolean - whether or not to return data.frame with all input and interim
+#' variables as well as predictions.
+#' @param pred_var Name to assign to for column of predictions from the 'raw' (or inner) model in
+#' the pipeline.
 #' @param ... Any additional arguements than need to be passed to the underlying model's predict
 #' methods.
 #'
-#' @return A data.frame containing the predicted values, input variables, as well as any interim
-#' tranformed variables.
+#' @return A vector of model predictions or scores (default); or, a data.frame containing the
+#' predicted values, input variables, as well as any interim tranformed variables.
 #'
 #' @examples
-#' lm_pipeline <- ml_pipline_builder()
-#' lm_pipeline$estimate_model(function(df) lm(y ~ x, df))
-#' data <- data.frame(x = c(-1.26, 1.24, 0.54), y = 0.5 * c(-1.26, 1.24, 0.54) + rnorm(3))
-#' lm_pipeline$fit(data)
-#' predict(lm_pipeline, data)
-#' # x          y       pred
-#' # 1 -1.26 -0.6440193 -0.9355810
-#' # 2  1.24  1.7833237  1.0335936
-#' # 3  0.54 -0.5590672  0.4822247
-predict.ml_pipeline <- function(pipeline, data, verbose = FALSE, pred_var = "pred_model", ...) {
+#' data <- faithful
+#'
+#' lm_pipeline <-
+#'   pipeline(
+#'     data,
+#'     estimate_model(function(df) {
+#'       lm(eruptions ~ 1 + waiting, df)
+#'     })
+#'   )
+#'
+#' in_sample_predictions <- predict(lm_pipeline, data)
+#' head(in_sample_predictions)
+#' # [1] 4.100592 2.209893 3.722452 2.814917 4.554360 2.285521
+predict.ml_pipeline <- function(object, data, verbose = FALSE, pred_var = "pred_model", ...) {
   if (verbose) {
-    pipeline$predict(data, verbose, pred_var, ...)
+    object$predict(data, verbose, pred_var, ...)
   } else {
-    pipeline$predict(data, verbose, pred_var, ...)[[1]]
+    object$predict(data, verbose, pred_var, ...)[[1]]
   }
 }
 
@@ -402,7 +541,8 @@ check_data_frame_throw_error <- function(func_return_object, func_name) {
 #' data <- data.frame(y = c(1, 2), x = c(0.1, 0.2))
 #' data_transformed <- transform_method(data)
 #' process_transform_throw_error(data, data_transformed, "transform_method")
-#' # transform_method yields data.frame that duplicates input vars - dropping the following columns: 'y', 'x'
+#' # transform_method yields data.frame that duplicates input vars - dropping the following
+#' columns: 'y', 'x'
 #' # q
 #' # 1 1
 #' # 2 4
