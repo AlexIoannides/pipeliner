@@ -150,7 +150,7 @@ process_transform_throw_error <- function(input_df, output_df, func_name) {
 #' # NULL
 #' }
 check_unary_func_throw_error <- function(func, func_name) {
-  if (!is.null(body(func)) & !(length(formals(func)) == 1)) {
+  if (!is.function(func) | !length(formals(func)) == 1) {
     stop(paste(func_name, "is not a unary function."), call. = FALSE)
   }
 

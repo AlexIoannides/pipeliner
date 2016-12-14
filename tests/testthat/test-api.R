@@ -16,19 +16,395 @@
 context('api')
 
 
-test_that("check_data_frame_throw_error doesn't throw an error when the object is a data.frame", {
+# ---- transform_features ----
+test_that("transform_features yields a function that transforms features as expected", {
   # arrange
-  input <- data.frame(x = 1:5, y = 6:10)
+  data <- faithful
+  f <- transform_features(function(df) {
+    data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+  })
 
-  # act & assert
-  expect_null(check_data_frame_throw_error(input, "returning_function_name"))
+  # act
+  f_out <- f(data)
+
+  # assert
+  output <- cbind(data, x1 = (data$waiting - mean(data$waiting)) / sd(data$waiting))
+  expect_true(is.function(f))
+  expect_s3_class(f, "transform_features")
+  expect_s3_class(f, "ml_pipeline_section")
+  expect_equal(f_out, output)
 })
 
 
-test_that('check_data_frame_throw_error throws an error when the object is not a data.frame', {
+test_that("transform_features throws errors with invalid inputs", {
   # arrange
-  input <- 1:10
+  data <- faithful
+  f1 <- function(df1, df2) {
+    data.frame(x1 = (df1$waiting - mean(df1$waiting)) / sd(df1$waiting))
+  }
+  f2 <- function(df) {
+    data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))[[1]]
+  }
+  f3 <- data.frame(x1 = (data$waiting - mean(data$waiting)) / sd(data$waiting))[[1]]
 
   # act & assert
-  expect_error(check_data_frame_throw_error(input, "returning_function_name"))
+  expect_error(transform_features(f1))
+  expect_error(transform_features(f2)(data))
+  expect_error(transform_features(f3))
+})
+
+
+# ---- transform_response ----
+test_that("transform_response yields a function that transforms response vars as expected", {
+  # arrange
+  data <- faithful
+  f <- transform_response(function(df) {
+    data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+  })
+
+  # act
+  f_out <- f(data)
+
+  # assert
+  output <- cbind(data, y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))
+  expect_true(is.function(f))
+  expect_s3_class(f, "transform_response")
+  expect_s3_class(f, "ml_pipeline_section")
+  expect_equal(f_out, output)
+})
+
+
+test_that("transform_response throws errors with invalid inputs", {
+  # arrange
+  data <- faithful
+  f1 <- function(df1, df2) {
+    data.frame(y = (df1$eruptions - mean(df1$eruptions)) / sd(df1$eruptions))
+  }
+  f2 <- function(df) {
+    data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))[[1]]
+  }
+  f3 <- data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))[[1]]
+
+  # act & assert
+  expect_error(transform_features(f1))
+  expect_error(transform_features(f2)(data))
+  expect_error(transform_features(f3))
+})
+
+
+# ---- estimate_model ----
+test_that("estimate_model yields a function that estimates a model as expected", {
+  # arrange
+  data <- faithful
+  f <- estimate_model(function(df) {
+    lm(eruptions ~ 1 + waiting, df)
+  })
+
+  # act
+  f_out <- f(data)
+
+  # assert
+  df <- data
+  output <- lm(eruptions ~ 1 + waiting, df)
+
+  expect_true(is.function(f))
+  expect_s3_class(f, "estimate_model")
+  expect_s3_class(f, "ml_pipeline_section")
+  expect_s3_class(f_out, "lm")
+  expect_equal(f_out, output)
+})
+
+
+test_that("inv_transform_response throws errors with invalid inputs", {
+  # arrange
+  data <- faithful
+  f1 <- function(df1) {
+    model <- lm(eruptions ~ 1 + waiting, df)
+    class(model) <- NULL
+    model
+  }
+  f2 <- function(df1, df2) {
+    lm(eruptions ~ 1 + waiting, df)
+  }
+  f3 <- function(df) {
+    data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))[[1]]
+  }
+  f4 <- data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))[[1]]
+
+  # act & assert
+  expect_error(estimate_model(f1)(data))
+  expect_error(estimate_model(f2))
+  expect_error(estimate_model(f3)(data))
+  expect_error(estimate_model(f4))
+})
+
+
+# ---- inv_transform_response ----
+test_that("inv_transform_response yields a function that transforms response vars as expected", {
+  # arrange
+  data <- faithful
+  f <- inv_transform_response(function(df) {
+    data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+  })
+
+  # act
+  f_out <- f(data)
+
+  # assert
+  output <- cbind(data, y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))
+  expect_true(is.function(f))
+  expect_s3_class(f, "inv_transform_response")
+  expect_s3_class(f, "ml_pipeline_section")
+  expect_equal(f_out, output)
+})
+
+
+test_that("inv_transform_response throws errors with invalid inputs", {
+  # arrange
+  data <- faithful
+  f1 <- function(df1, df2) {
+    data.frame(y = (df1$eruptions - mean(df1$eruptions)) / sd(df1$eruptions))
+  }
+  f2 <- function(df) {
+    data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))[[1]]
+  }
+  f3 <- data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))[[1]]
+
+  # act & assert
+  expect_error(inv_transform_features(f1))
+  expect_error(inv_transform_features(f2)(data))
+  expect_error(inv_transform_features(f3))
+})
+
+
+# ---- pipeline ----
+test_that("pipeline produces machine learning pipelines with all possible stages", {
+  # arrange
+  data <- faithful
+
+  # act
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + x1, df)
+      }),
+
+      inv_transform_response(function(df) {
+         data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  # assert
+  df <- cbind(
+    data,
+    data.frame(x1 = (data$waiting - mean(data$waiting)) / sd(data$waiting)),
+    data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))
+  )
+  manual_model <- lm(y ~ 1 + x1, df)
+  manual_pred <- cbind(
+    df,
+    pred_model = predict(manual_model, df),
+    pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
+  )
+
+  expect_s3_class(lm_pipeline, "ml_pipeline")
+  expect_equal(lm_pipeline$inner_model, manual_model)
+  expect_true(is.function(lm_pipeline$predict))
+  expect_equal(lm_pipeline$predict(data), manual_pred)
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[6])
+})
+
+
+test_that("pipeline produces machine learning pipelines with just feature transformation", {
+  # arrange
+  data <- faithful
+
+  # act
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      estimate_model(function(df) {
+        lm(eruptions ~ 1 + x1, df)
+      })
+    )
+
+  # assert
+  df <- cbind(
+    data,
+    data.frame(x1 = (data$waiting - mean(data$waiting)) / sd(data$waiting))
+  )
+  manual_model <- lm(eruptions ~ 1 + x1, df)
+  manual_pred <- cbind(
+    df,
+    pred_model = predict(manual_model, df)
+  )
+
+  expect_s3_class(lm_pipeline, "ml_pipeline")
+  expect_equal(lm_pipeline$inner_model, manual_model)
+  expect_true(is.function(lm_pipeline$predict))
+  expect_equal(lm_pipeline$predict(data), manual_pred)
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[4])
+})
+
+
+test_that("pipeline produces machine learning pipelines with just response transformations", {
+  # arrange
+  data <- faithful
+
+  # act
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + waiting, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  # assert
+  df <- cbind(
+    data,
+    data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))
+  )
+  manual_model <- lm(y ~ 1 + waiting, df)
+  manual_pred <- cbind(
+    df,
+    pred_model = predict(manual_model, df),
+    pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
+  )
+
+  expect_s3_class(lm_pipeline, "ml_pipeline")
+  expect_equal(lm_pipeline$inner_model, manual_model)
+  expect_true(is.function(lm_pipeline$predict))
+  expect_equal(lm_pipeline$predict(data), manual_pred)
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[5])
+})
+
+
+test_that("pipeline throws an error if only one of transform_response and transform_response is set", {
+  # arrange
+  data <- faithful
+
+  # act & assert
+  expect_error(
+    pipeline(
+      data,
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + waiting, df)
+      })
+    )
+  )
+
+  expect_error(
+    pipeline(
+      data,
+      estimate_model(function(df) {
+        lm(y ~ 1 + waiting, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+  )
+})
+
+
+test_that("pipeline throws error if estimate_model not set", {
+  # arrange
+  data <- faithful
+
+  # act
+  expect_error(
+    pipeline(
+      data,
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+  )
+})
+
+
+test_that("pipeline automatically handles unexpected methods", {
+  # arrange
+  data <- faithful
+
+  # act
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      x <- rnorm(100),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + waiting, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      }),
+
+      function(df) df
+    )
+
+  # assert
+  df <- cbind(
+    data,
+    data.frame(y = (data$eruptions - mean(data$eruptions)) / sd(data$eruptions))
+  )
+  manual_model <- lm(y ~ 1 + waiting, df)
+  manual_pred <- cbind(
+    df,
+    pred_model = predict(manual_model, df),
+    pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
+  )
+
+  expect_s3_class(lm_pipeline, "ml_pipeline")
+  expect_equal(lm_pipeline$inner_model, manual_model)
+  expect_true(is.function(lm_pipeline$predict))
+  expect_equal(lm_pipeline$predict(data), manual_pred)
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[5])
+})
+
+
+# ---- ml_pipeline_builder ----
+test_that("ml_pipeline_builder() OO API produces the same results as pipeline() functional API", {
+  # arrange
+
+  # act
+
+  # assert
+
 })

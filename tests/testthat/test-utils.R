@@ -119,7 +119,7 @@ test_that("check_unary_func_throw_error throws an error if a function isn't unar
   # arrange
   func <- function(x, y) x + y
 
-  #act & assert
+  # act & assert
   expect_error(check_unary_func_throw_error(func))
 })
 
@@ -128,8 +128,17 @@ test_that("check_unary_func_throw_error doesn't throw an error if a function is 
   # arrange
   func <- function(x) x
 
-  #act & assert
+  # act & assert
   expect_null(check_unary_func_throw_error(func))
+})
+
+
+test_that("check_unary_func_throw_error doesn't throw an error if arg is not a function", {
+  # arrange
+  func <- data.frame(x = 1:5)
+
+  # act & assert
+  expect_error(check_unary_func_throw_error(func))
 })
 
 
@@ -139,7 +148,7 @@ test_that("check_predict_method_throw_error doesn't throw error if object has pr
   data <- faithful
   model <- lm(eruptions ~ 1 + waiting, data)
 
-  #act & assert
+  # act & assert
   expect_null(check_predict_method_throw_error(model))
 })
 
