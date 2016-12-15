@@ -174,3 +174,27 @@ test_that("cbind_fast works like cbind for simple data.frame column combination"
 
   expect_equal(cbind_fast(df1, df2), cbind(df1, df2))
 })
+
+
+# ---- try_pipeline_func_call ----
+test_that("try_pipeline_func_call calls functions that ought to work as expected", {
+  # arrange
+  data <- data.frame(x = 1:3, y = 1:3 / 10)
+  f <- function(df) data.frame(p = df$x ^ 2, q = df$y)
+
+  # act
+  df_out <- try_pipeline_func_call(f, data, "f")
+
+  # assert
+  expect_equal(df_out, f(data))
+})
+
+
+test_that("try_pipeline_func_call throws errors with custom messages for invalid functions", {
+  # arrange
+  data <- data.frame(x = 1:3, y = 1:3 / 10)
+  f <- function(df) data.frame(p = df$x ^ 2, q = df$wrong)
+
+  # act & assert
+  expect_error(try_pipeline_func_call(f, data, "f"))
+})

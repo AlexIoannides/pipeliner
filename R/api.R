@@ -45,7 +45,8 @@ transform_features <- function(.f) {
   check_unary_func_throw_error(.f, "transform_features()")
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
-    df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_features()")
+    func_call <- try_pipeline_func_call(.f, df_in, "transform_features()")
+    df_out <- process_transform_throw_error(df_in, func_call, "transform_features()")
     cbind_fast(df_in, df_out)
   }
 
@@ -85,7 +86,8 @@ transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "transform_response()")
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
-    df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_response()")
+    func_call <- try_pipeline_func_call(.f, df_in, "transform_response()")
+    df_out <- process_transform_throw_error(df_in, func_call, "transform_response()")
     cbind_fast(df_in, df_out)
   }
 
@@ -126,7 +128,7 @@ estimate_model <- function(.f) {
   check_unary_func_throw_error(.f, "estimate_model()")
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
-    model_out <- .f(df_in)
+    model_out <- func_call <- try_pipeline_func_call(.f, df_in, "estimate_model()")
     check_predict_method_throw_error(model_out)
     model_out
   }
@@ -170,7 +172,8 @@ inv_transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "inv_transform_response()")
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
-    df_out <- process_transform_throw_error(df_in, .f(df_in), "inv_transform_response()")
+    func_call <- try_pipeline_func_call(.f, df_in, "inv_transform_response()")
+    df_out <- process_transform_throw_error(df_in, func_call, "inv_transform_response()")
     cbind_fast(df_in, df_out)
   }
 

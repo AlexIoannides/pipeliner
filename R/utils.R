@@ -218,3 +218,47 @@ cbind_fast <- function(df1, df2) {
   Map(function(colname) { df1[[colname]] <<- df2[[colname]] }, new_colnames)
   df1
 }
+
+
+#' Custom error handler for printing the name of an enclosing function with error
+#'
+#' @param e A \code{simpleError} - e.g. thrown from \code{tryCatch}
+#' @param calling_func A character string naming the enclosing function (or closure) for printing
+#' with error messages
+#'
+#' @return NULL - throws error with custom message
+#'
+#' @examples
+#' \dontrun{
+#' f <- function(x) x ^ 2
+#' tryCatch(f("a"), error = function(e) func_error_handler(e, "f"))
+#' # Error in x^2 : non-numeric argument to binary operator
+#' # ---> called from within function: f
+#' }
+func_error_handler <- function(e, calling_func) {
+  e$message <- paste0(e$message, "\n ---> called from within function: ", calling_func)
+  stop(e)
+}
+
+
+#' Custom tryCatch configuration for pipeline segment segment functions
+#'
+#' @param .f Pipleine segment function
+#' @param arg Arguement of \code{.f}
+#' @param func_name (Character string).
+#'
+#' @return Returns the same object as .f does (a data.frame or model object), unless an error is
+#' thrown.
+#'
+#' @examples
+#' \dontrun{
+#' data <- data.frame(x = 1:3, y = 1:3 / 10)
+#' f <- function(df) data.frame(p = df$x ^ 2, q = df$wrong)
+#' try_pipeline_func_call(f, data, "f")
+#' # Error in data.frame(p = df$x^2, q = df$wrong) :
+#' #   arguments imply differing number of rows: 3, 0
+#' # --> called from within function: f
+#' }
+try_pipeline_func_call <- function(.f, arg, func_name) {
+  tryCatch(.f(arg), error = function(e) func_error_handler(e, func_name))
+}
