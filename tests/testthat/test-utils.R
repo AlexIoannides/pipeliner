@@ -162,3 +162,15 @@ test_that("check_predict_method_throw_error throws error if object doesn't have 
   #act & assert
   expect_error(check_predict_method_throw_error(model))
 })
+
+
+# ---- cbind_fast ----
+test_that("cbind_fast works like cbind for simple data.frame column combination", {
+  # arrange
+  df1 <- data.frame(x = 1:5, y = 1:5 * 0.1)
+  df2 <- data.frame(a = 6:10, b = 6:10 * 0.25)
+
+  # act & assert
+
+  expect_equal(cbind_fast(df1, df2), cbind(df1, df2))
+})

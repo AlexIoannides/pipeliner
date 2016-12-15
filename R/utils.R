@@ -44,7 +44,7 @@ predict_model <- function(.m) {
   g <- function(df_in, pred_var = "pred_model", ...) {
     check_data_frame_throw_error(df_in)
     df_out <- stats::setNames(data.frame(stats::predict(.m, df_in, ...)), pred_var)
-    cbind(df_in, df_out)
+    cbind_fast(df_in, df_out)
   }
 
   structure(g, class = c("predict_model", "ml_pipeline_section"))
@@ -96,7 +96,7 @@ check_data_frame_throw_error <- function(func_return_object, func_name) {
 #'
 #' @examples
 #' \dontrun{
-#' transform_method <- function(df) cbind(df, q = df$y * df$y)
+#' transform_method <- function(df) cbind_fast(df, q = df$y * df$y)
 #' data <- data.frame(y = c(1, 2), x = c(0.1, 0.2))
 #' data_transformed <- transform_method(data)
 #' process_transform_throw_error(data, data_transformed, "transform_method")
@@ -187,4 +187,32 @@ check_predict_method_throw_error <- function(func_return_object) {
   }
 
   NULL
+}
+
+
+#' Faster alternative to \code{cbind_fast}
+#'
+#' This is not as 'safe' as using \code{cbind_fast} - for example, if \code{df1} has columns with the
+#' same name as columns in \code{df2}, then they will be over-written.
+#'
+#' @param df1 A data.frame.
+#' @param df2 Another data.frame
+#'
+#' @return A data.frame equal to \code{df1} with the columns of \code{df2} appended.
+#'
+#' @examples
+#' df1 <- data.frame(x = 1:5, y = 1:5 * 0.1)
+#' df2 <- data.frame(a = 6:10, b = 6:10 * 0.25)
+#' df3 <- cbind_fast(df1, df2)
+#' df3
+#' #   x   y  a    b
+#' # 1 1 0.1  6 1.50
+#' # 2 2 0.2  7 1.75
+#' # 3 3 0.3  8 2.00
+#' # 4 4 0.4  9 2.25
+#' # 5 5 0.5 10 2.50
+cbind_fast <- function(df1, df2) {
+  new_colnames <- colnames(df2)
+  Map(function(colname) { df1[[colname]] <<- df2[[colname]] }, new_colnames)
+  df1
 }

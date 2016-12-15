@@ -46,7 +46,7 @@ transform_features <- function(.f) {
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
     df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_features()")
-    cbind(df_in, df_out)
+    cbind_fast(df_in, df_out)
   }
 
   structure(g, class = c("transform_features", "ml_pipeline_section"))
@@ -86,7 +86,7 @@ transform_response <- function(.f) {
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
     df_out <- process_transform_throw_error(df_in, .f(df_in), "transform_response()")
-    cbind(df_in, df_out)
+    cbind_fast(df_in, df_out)
   }
 
   structure(g, class = c("transform_response", "ml_pipeline_section"))
@@ -171,7 +171,7 @@ inv_transform_response <- function(.f) {
   g <- function(df_in) {
     check_data_frame_throw_error(df_in)
     df_out <- process_transform_throw_error(df_in, .f(df_in), "inv_transform_response()")
-    cbind(df_in, df_out)
+    cbind_fast(df_in, df_out)
   }
 
   structure(g, class = c("inv_transform_response", "ml_pipeline_section"))

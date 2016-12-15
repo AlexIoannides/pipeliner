@@ -25,7 +25,7 @@ function.
 }
 \examples{
 \dontrun{
-transform_method <- function(df) cbind(df, q = df$y * df$y)
+transform_method <- function(df) cbind_fast(df, q = df$y * df$y)
 data <- data.frame(y = c(1, 2), x = c(0.1, 0.2))
 data_transformed <- transform_method(data)
 process_transform_throw_error(data, data_transformed, "transform_method")
