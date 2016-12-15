@@ -19,6 +19,7 @@ This is not as 'safe' as using \code{cbind_fast} - for example, if \code{df1} ha
 same name as columns in \code{df2}, then they will be over-written.
 }
 \examples{
+\dontrun{
 df1 <- data.frame(x = 1:5, y = 1:5 * 0.1)
 df2 <- data.frame(a = 6:10, b = 6:10 * 0.25)
 df3 <- cbind_fast(df1, df2)
@@ -29,5 +30,6 @@ df3
 # 3 3 0.3  8 2.00
 # 4 4 0.4  9 2.25
 # 5 5 0.5 10 2.50
+}
 }
 

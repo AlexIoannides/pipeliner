@@ -201,6 +201,7 @@ check_predict_method_throw_error <- function(func_return_object) {
 #' @return A data.frame equal to \code{df1} with the columns of \code{df2} appended.
 #'
 #' @examples
+#' \dontrun{
 #' df1 <- data.frame(x = 1:5, y = 1:5 * 0.1)
 #' df2 <- data.frame(a = 6:10, b = 6:10 * 0.25)
 #' df3 <- cbind_fast(df1, df2)
@@ -211,6 +212,7 @@ check_predict_method_throw_error <- function(func_return_object) {
 #' # 3 3 0.3  8 2.00
 #' # 4 4 0.4  9 2.25
 #' # 5 5 0.5 10 2.50
+#' }
 cbind_fast <- function(df1, df2) {
   new_colnames <- colnames(df2)
   Map(function(colname) { df1[[colname]] <<- df2[[colname]] }, new_colnames)
