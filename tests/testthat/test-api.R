@@ -402,9 +402,155 @@ test_that("pipeline automatically handles unexpected methods", {
 # ---- ml_pipeline_builder ----
 test_that("ml_pipeline_builder() OO API produces the same results as pipeline() functional API", {
   # arrange
+  data <- faithful
 
-  # act
+  # act - functional API
+  lm_pipeline_func <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + x1, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  predictions_func <- lm_pipeline_func$predict(data)
+
+  # act - OO API
+  lm_pipeline_OO <- ml_pipline_builder()
+
+  lm_pipeline_OO$transform_features(function(df) {
+     data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+  })
+
+  lm_pipeline_OO$transform_response(function(df) {
+     data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+  })
+
+  lm_pipeline_OO$inv_transform_response(function(df) {
+    data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+  })
+
+  lm_pipeline_OO$estimate_model(function(df) {
+     lm(y ~ 1 + x1, df)
+  })
+
+  lm_pipeline_OO$fit(data)
+  predictions_OO <- lm_pipeline_OO$predict(data)
 
   # assert
+  expect_equal(lm_pipeline_OO$inner_model(), lm_pipeline_func$inner_model)
+  expect_equal(predictions_OO, predictions_func)
+  expect_equal(class(lm_pipeline_OO), class(lm_pipeline_func))
+})
 
+
+# ---- predict.lm_pipeline ----
+test_that("predict.ml_pipeline generates non-verbose predictions for a pipeline", {
+  # arrange
+  data <- faithful
+
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + x1, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  # act
+  predictions <- predict(lm_pipeline, data)
+
+  # assert
+  result <- lm_pipeline$predict(data)[[6]]
+  expect_equal(predictions, result)
+})
+
+
+test_that("predict.ml_pipeline generates verbose predictions for a pipeline", {
+  # arrange
+  data <- faithful
+
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + x1, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$pred_model * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  # act
+  predictions <- predict(lm_pipeline, data, verbose = TRUE)
+
+  # assert
+  result <- lm_pipeline$predict(data)
+  expect_equal(predictions, result)
+})
+
+
+test_that("predict.ml_pipeline generates verbose predictions for pipeline with custom var name", {
+  # arrange
+  data <- faithful
+
+  lm_pipeline <-
+    pipeline(
+      data,
+      transform_features(function(df) {
+        data.frame(x1 = (df$waiting - mean(df$waiting)) / sd(df$waiting))
+      }),
+
+      transform_response(function(df) {
+        data.frame(y = (df$eruptions - mean(df$eruptions)) / sd(df$eruptions))
+      }),
+
+      estimate_model(function(df) {
+        lm(y ~ 1 + x1, df)
+      }),
+
+      inv_transform_response(function(df) {
+        data.frame(pred_eruptions = df$foo * sd(df$eruptions) + mean(df$eruptions))
+      })
+    )
+
+  # act
+  predictions <- predict(lm_pipeline, data, verbose = TRUE, pred_var = "foo")
+
+  # assert
+  result <- lm_pipeline$predict(data, pred_var = "foo")
+  expect_equal(predictions, result)
 })

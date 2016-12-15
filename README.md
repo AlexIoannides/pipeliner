@@ -45,7 +45,7 @@ lm_pipeline$fit(data)
 We can access the estimated inner model directly and compute summaries as usual.
 
 ``` r
-summary(lm_pipeline$model_estimate())
+summary(lm_pipeline$inner_model())
 ```
 
     ## 

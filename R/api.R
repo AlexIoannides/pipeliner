@@ -358,7 +358,7 @@ pipeline <- function(.data, ...) {
 #'
 ml_pipline_builder <- function() {
   # define inner fields for estimated models and pipeline prediction functions
-  model_estimate_inner <- NULL
+  inner_model_inner <- NULL
   predict_inner <- NULL
 
   # define inner methods for transformation and estimation that need to be set
@@ -368,8 +368,8 @@ ml_pipline_builder <- function() {
   estimate_model_inner <- NULL
 
   # define interface for setting transformation and estimation methods
-  model_estimate <- function() {
-    model_estimate_inner
+  inner_model <- function() {
+    inner_model_inner
   }
 
   predict <- function(data, verbose = TRUE, pred_var = "pred_model", ...) {
@@ -397,14 +397,14 @@ ml_pipline_builder <- function() {
     pipeline_object <- pipeline(data, transform_features_inner, transform_response_inner,
                                 inv_transform_response_inner, estimate_model_inner)
 
-    model_estimate_inner <<- pipeline_object$inner_model
+    inner_model_inner <<- pipeline_object$inner_model
     predict_inner <<- pipeline_object$predict
   }
 
   # return the object
   interface <- list("transform_features" = transform_features,
     "transform_response" = transform_response, "inv_transform_response" = inv_transform_response,
-    "estimate_model" = estimate_model, "model_estimate" = model_estimate, "predict" = predict,
+    "estimate_model" = estimate_model, "inner_model" = inner_model, "predict" = predict,
     "fit" = fit)
 
   structure(interface, class = c("ml_pipeline"))

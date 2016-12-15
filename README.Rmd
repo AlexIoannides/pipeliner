@@ -46,7 +46,7 @@ lm_pipeline$fit(data)
 We can access the estimated inner model directly and compute summaries as usual.
 
 ```{r inner_model_summary}
-summary(lm_pipeline$model_estimate())
+summary(lm_pipeline$inner_model())
 ```
 
 Now that the pipeline has been estimated it is easy to generate predictions without having to handle transformations explicitly.
