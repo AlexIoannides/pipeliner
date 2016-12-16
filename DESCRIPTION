@@ -5,7 +5,10 @@ Title: Machine Learning Pipelines for R
 Date: 2016-12-16
 Author: Alex Ioannides
 Maintainer: Alex Ioannides <alex.ioannides@yahoo.co.uk>
-Description: A framework for defining 'pipelines' of functions for applying data transformations, model estimation and inverse-transformations, resulting in predicted value generation (or model-scoring) that automatically applies the entire pipeline of functions required to go from input to predicted output.
+Description: A framework for defining 'pipelines' of functions for applying data transformations, 
+  model estimation and inverse-transformations, resulting in predicted value generation (or 
+  model-scoring) functions that automatically apply the entire pipeline of functions required to go
+  from input to predicted output.
 License: Apache License 2.0
 URL: https://github.com/alexioannides/pipeliner
 BugReports: https://github.com/alexioannides/pipeliner/issues
@@ -13,6 +16,8 @@ LazyData: TRUE
 Suggests:
     knitr,
     testthat,
-    rmarkdown
+    rmarkdown,
+    modelr,
+    tidyverse
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

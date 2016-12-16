@@ -20,8 +20,8 @@ The idea of pipelines is inspired by the machine learning pipelines implemented 
 devtools::install_github("alexioannides/pipeliner")
 ```
 
-Pipes in the Pipleline - the Basic Idea in More Detail
-------------------------------------------------------
+Pipes in the Pipleline
+----------------------
 
 There are currently four types of pipeline section - a section being a function that wraps a user-defined function - that can be assembled into a pipeline:
 
@@ -109,7 +109,7 @@ head(in_sample_predictions)
     ## 5     4.533      85  1.0373644  0.91575542  0.9344694       4.554360
     ## 6     2.883      55 -1.1693335 -0.52987412 -1.0533487       2.285521
 
-### Accessing Inner Models & Prediction Function
+### Accessing Inner Models & Prediction Functions
 
 We can access the estimated inner models directly and compute summaries, etc - for example,
 
@@ -187,7 +187,7 @@ head(predict(lm_pipeline, data))
 
 Nice, compact and expressive (if I don't say so myself)!
 
-### Cross-validation Made Simple
+### Compact Cross-validation
 
 If we now introduce the `modelr` package into this workflow and adopt the the list-columns pattern described in Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/many-models.html#list-columns-1 "R 4 Data Science - Many Models & List Columns"), we can achieve achieve wonderfully compact end-to-end model estimation and cross-validation,
 
@@ -228,9 +228,9 @@ cv_rmse
 ```
 
     ## # A tibble: 1 × 2
-    ##   mean_rmse    sd_rmse
-    ##       <dbl>      <dbl>
-    ## 1 0.4774993 0.04222968
+    ##   mean_rmse   sd_rmse
+    ##       <dbl>     <dbl>
+    ## 1 0.4835776 0.0695795
 
 Forthcoming Attractions
 =======================
