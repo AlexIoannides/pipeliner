@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- [![codecov](https://codecov.io/github/alexioannides/pipeliner/branch/master/graphs/badge.svg)](https://codecov.io/github/alexioannides/pipeliner) -->
-[![Build Status](https://travis-ci.org/AlexIoannides/pipeliner.svg?branch=master)](https://travis-ci.org/AlexIoannides/pipeliner) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AlexIoannides/pipeliner?branch=master&svg=true)](https://ci.appveyor.com/project/AlexIoannides/pipeliner) <!--[![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)-->
+[![Build Status](https://travis-ci.org/AlexIoannides/pipeliner.svg?branch=master)](https://travis-ci.org/AlexIoannides/pipeliner) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AlexIoannides/pipeliner?branch=master&svg=true)](https://ci.appveyor.com/project/AlexIoannides/pipeliner) [![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) <!--[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)-->
 
 Machine Learning Pipelines for R
 ================================
@@ -12,7 +12,7 @@ The `pipeliner` package aims to provide an elegant solution to these issues by i
 
 -   define transformation and inverse-transformation functions;
 -   fit a model on training data; and then,
--   generate a prediction (or model-scoring) function that automatically applies the entire pipeline of transformation and inverse-transformation to the inputs and outputs of the inner-model and its predicted values (or scores).
+-   generate a prediction (or model-scoring) function that automatically applies the entire pipeline of transformations and inverse-transformations to the inputs and outputs of the inner-model and its predicted values (or scores).
 
 The idea of pipelines is inspired by the machine learning pipelines implemented in [Apache Spark's MLib library](http://spark.apache.org/docs/latest/ml-pipeline.html "Pipelines in Apache Spark MLib") (which are in-turn inspired by Python's scikit-Learn package). This package is still in its infancy and the latest development version can be downloaded from [this GitHub repository](https://github.com/AlexIoannides/pipeliner "Pipeliner on GitHub") using the `devtools` package (bundled with RStudio),
 
@@ -59,12 +59,12 @@ inv_transform_response(function(df) {
 
 As demonstrated above, each one of these functions expects as its argument another unary function of a data.frame (i.e. it has to be a function of a single data.frame). With the **exception** of `estimate_model`, which expects the input function to return an object that has a `predict.object-class-name` method existing in the current environment (e.g. `predict.lm` for linear models built using `lm()`), all the other transform functions also expect their input functions to return data.frames (consisting entirely of columns **not** present in the input data.frame). If any of these rules are violated then appropriately named errors will be thrown to help you locate the issue.
 
-If this sounds complex and convoluted than I encourage you to to skip to the examples below - this framework is **very** simple to use in practice. Simplicity is the key aim idea here.
+If this sounds complex and convoluted then I encourage you to to skip to the examples below - this framework is **very** simple to use in practice. Simplicity is the key aim here.
 
 Two Interfaces to Rule Them All
 -------------------------------
 
-I am a great believer and protagonist for functional programming - especially for data-related tasks like building machine learning models. At the same time the notion of a 'machine learning pipeline' is well represented with a simple object-oriented class hierarchy (which is how it is implemented in [Apache Spark's](http://spark.apache.org/docs/latest/ml-pipeline.html "Pipelines in Apache Spark MLib")). I couldn't decide which style was best, so I implemented both within `pipeliner` and ensured their output can be used interchangeably. To keep this introduction simple, however, I'm only going to talk about the functional interface - those interested in the (more) object-oriented approach are encouraged to read the manual pages for `ml_pipeline_builder`.
+I am a great believer and protagonist for functional programming - especially for data-related tasks like building machine learning models. At the same time the notion of a 'machine learning pipeline' is well represented with a simple object-oriented class hierarchy (which is how it is implemented in [Apache Spark's](http://spark.apache.org/docs/latest/ml-pipeline.html "Pipelines in Apache Spark MLib")). I couldn't decide which style of interface was best, so I implemented both within `pipeliner` (using the same underlying code) and ensured their output can be used interchangeably. To keep this introduction simple, however, I'm only going to talk about the functional interface - those interested in the (more) object-oriented approach are encouraged to read the manual pages for the `ml_pipeline_builder` 'class'.
 
 ### Example Usage with a Functional Flavour
 
@@ -156,7 +156,7 @@ head(predictions)
 Turbo-Charged Pipelines in the Tidyverse
 ----------------------------------------
 
-The `pipeliner` approach to building models becomes even more concise when combined with the set of packages in the [tidyverse](http://tidyverse.org "Welcome to The Tidyverse!"). For example, the functional example we encountered first could be rewritten as,
+The `pipeliner` approach to building models becomes even more concise when combined with the set of packages in the [tidyverse](http://tidyverse.org "Welcome to The Tidyverse!"). For example, the 'Old Faithful' pipeline could be rewritten as,
 
 ``` r
 library(tidyverse)
@@ -189,7 +189,7 @@ Nice, compact and expressive (if I don't say so myself)!
 
 ### Compact Cross-validation
 
-If we now introduce the `modelr` package into this workflow and adopt the the list-columns pattern described in Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/many-models.html#list-columns-1 "R 4 Data Science - Many Models & List Columns"), we can achieve achieve wonderfully compact end-to-end model estimation and cross-validation,
+If we now introduce the `modelr` package into this workflow and adopt the the list-columns pattern described in Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/many-models.html#list-columns-1 "R 4 Data Science - Many Models & List Columns"), we can also achieve wonderfully compact end-to-end model estimation and cross-validation,
 
 ``` r
 library(modelr)
@@ -228,11 +228,11 @@ cv_rmse
 ```
 
     ## # A tibble: 1 × 2
-    ##   mean_rmse   sd_rmse
-    ##       <dbl>     <dbl>
-    ## 1 0.4835776 0.0695795
+    ##   mean_rmse    sd_rmse
+    ##       <dbl>      <dbl>
+    ## 1 0.4874391 0.01783045
 
 Forthcoming Attractions
 =======================
 
-I built `pipeliner` largely to fill a hole in my own workflows. Up until now I've used Max Kuhn's excellent [caret package](http://topepo.github.io/caret/index.html "Caret") quite a bit, but for in-the-moment model building (e.g. within a R Notebook) it wasn't making simplifying the code *that* much, and the style doesn't quite fit in with the tidy functional world I now inhabit most of the time. So, I plugged the hole by myself. I intend to live with `pipeliner` for a while to get an idea of where it might go next, but I am always open to suggestions (and bug notifications) - please [leave any ideas here](https://github.com/AlexIoannides/pipeliner/issues "Pipeliner Issues on GitHub").
+I built `pipeliner` largely to fill a hole in my own workflows. Up until now I've used Max Kuhn's excellent [caret package](http://topepo.github.io/caret/index.html "Caret") quite a bit, but for in-the-moment model building (e.g. within a R Notebook) it wasn't simplifying the code *that* much, and the style doesn't quite fit with the tidy and functional world that I now inhabit most of the time. So, I plugged the hole by myself. I intend to live with `pipeliner` for a while to get an idea of where it might go next, but I am always open to suggestions (and bug notifications) - please [leave any ideas here](https://github.com/AlexIoannides/pipeliner/issues "Pipeliner Issues on GitHub").

@@ -6,7 +6,7 @@ output: github_document
 
 <!-- [![codecov](https://codecov.io/github/alexioannides/pipeliner/branch/master/graphs/badge.svg)](https://codecov.io/github/alexioannides/pipeliner) -->
 [![Build Status](https://travis-ci.org/AlexIoannides/pipeliner.svg?branch=master)](https://travis-ci.org/AlexIoannides/pipeliner) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AlexIoannides/pipeliner?branch=master&svg=true)](https://ci.appveyor.com/project/AlexIoannides/pipeliner) 
-<!--[![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)-->
+[![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) <!--[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)-->
 
 
 # Machine Learning Pipelines for R
