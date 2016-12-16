@@ -73,7 +73,7 @@ predict_model <- function(.m) {
 #' }
 check_data_frame_throw_error <- function(func_return_object, func_name) {
   if (!is.null(func_return_object) & !is.data.frame(func_return_object)) {
-    stop(paste(func_name, "does not produce a data.frame."), call. = FALSE)
+    stop(paste("data.frame expected, but not found:", func_name), call. = FALSE)
   }
 
   NULL

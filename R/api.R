@@ -44,7 +44,7 @@
 transform_features <- function(.f) {
   check_unary_func_throw_error(.f, "transform_features()")
   g <- function(df_in) {
-    check_data_frame_throw_error(df_in, "transform_features()")
+    check_data_frame_throw_error(df_in, "transform_features() input")
     func_call <- try_pipeline_func_call(.f, df_in, "transform_features()")
     df_out <- process_transform_throw_error(df_in, func_call, "transform_features()")
     cbind_fast(df_in, df_out)
@@ -85,7 +85,7 @@ transform_features <- function(.f) {
 transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "transform_response()")
   g <- function(df_in) {
-    check_data_frame_throw_error(df_in, "transform_response()")
+    check_data_frame_throw_error(df_in, "transform_response() input")
     func_call <- try_pipeline_func_call(.f, df_in, "transform_response()")
     df_out <- process_transform_throw_error(df_in, func_call, "transform_response()")
     cbind_fast(df_in, df_out)
@@ -127,7 +127,7 @@ transform_response <- function(.f) {
 estimate_model <- function(.f) {
   check_unary_func_throw_error(.f, "estimate_model()")
   g <- function(df_in) {
-    check_data_frame_throw_error(df_in, "estimate_model()")
+    check_data_frame_throw_error(df_in, "estimate_model() input")
     model_out <- func_call <- try_pipeline_func_call(.f, df_in, "estimate_model()")
     check_predict_method_throw_error(model_out)
     model_out
@@ -171,7 +171,7 @@ estimate_model <- function(.f) {
 inv_transform_response <- function(.f) {
   check_unary_func_throw_error(.f, "inv_transform_response()")
   g <- function(df_in) {
-    check_data_frame_throw_error(df_in, "inv_transform_response()")
+    check_data_frame_throw_error(df_in, "inv_transform_response() input")
     func_call <- try_pipeline_func_call(.f, df_in, "inv_transform_response()")
     df_out <- process_transform_throw_error(df_in, func_call, "inv_transform_response()")
     cbind_fast(df_in, df_out)
@@ -228,7 +228,7 @@ inv_transform_response <- function(.f) {
 #'     })
 #'   )
 pipeline <- function(.data, ...) {
-  check_data_frame_throw_error(.data, ".data in pipeline")
+  check_data_frame_throw_error(.data, ".data argument in pipeline() call")
 
   # analyse defined pipline sections
   args <- list(...)
