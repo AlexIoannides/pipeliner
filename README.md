@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- [![codecov](https://codecov.io/github/alexioannides/pipeliner/branch/master/graphs/badge.svg)](https://codecov.io/github/alexioannides/pipeliner) -->
-[![Build Status](https://travis-ci.org/AlexIoannides/pipeliner.svg?branch=master)](https://travis-ci.org/AlexIoannides/pipeliner) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AlexIoannides/pipeliner?branch=master&svg=true)](https://ci.appveyor.com/project/AlexIoannides/pipeliner) [![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) <!--[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)-->
+[![Build Status](https://travis-ci.org/AlexIoannides/pipeliner.svg?branch=master)](https://travis-ci.org/AlexIoannides/pipeliner) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AlexIoannides/pipeliner?branch=master&svg=true)](https://ci.appveyor.com/project/AlexIoannides/pipeliner) [![cran version](http://www.r-pkg.org/badges/version/pipeliner)](https://cran.r-project.org/package=pipeliner) [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/pipeliner)](https://github.com/metacran/cranlogs.app)
 
 Machine Learning Pipelines for R
 ================================
@@ -228,9 +228,9 @@ cv_rmse
 ```
 
     ## # A tibble: 1 × 2
-    ##   mean_rmse    sd_rmse
-    ##       <dbl>      <dbl>
-    ## 1 0.4874391 0.01783045
+    ##   mean_rmse   sd_rmse
+    ##       <dbl>     <dbl>
+    ## 1 0.4900022 0.0481225
 
 Forthcoming Attractions
 =======================
