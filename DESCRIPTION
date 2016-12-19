@@ -1,6 +1,6 @@
 Package: pipeliner
 Type: Package
-Version: 0.1.1
+Version: 0.1.1.900
 Title: Machine Learning Pipelines for R
 Date: 2016-12-16
 Author: Alex Ioannides
