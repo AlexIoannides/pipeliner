@@ -115,7 +115,7 @@ process_transform_throw_error <- function(input_df, output_df, func_name) {
     input_vars_in_output_vars <- output_vars %in% input_vars
     if (any(input_vars_in_output_vars)) {
       duplicated_vars <- output_vars[input_vars_in_output_vars]
-      output_df[, duplicated_vars] <- NULL
+      output_df[duplicated_vars] <- list(NULL)
       message_string <- paste(func_name,
                               "yields data.frame that duplicates input vars - dropping the following columns:",
                               paste0(paste0("'", duplicated_vars, "'"), collapse = ", "))
