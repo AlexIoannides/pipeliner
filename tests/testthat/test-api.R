@@ -215,12 +215,13 @@ test_that("pipeline produces machine learning pipelines with all possible stages
     pred_model = predict(manual_model, df),
     pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
   )
+  manual_pred[["y"]] <- NULL
 
   expect_s3_class(lm_pipeline, "ml_pipeline")
   expect_equal(lm_pipeline$inner_model, manual_model)
   expect_true(is.function(lm_pipeline$predict))
   expect_equal(lm_pipeline$predict(data), manual_pred)
-  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[6])
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[5])
 })
 
 
@@ -292,12 +293,13 @@ test_that("pipeline produces machine learning pipelines with just response trans
     pred_model = predict(manual_model, df),
     pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
   )
+  manual_pred[["y"]] <- NULL
 
   expect_s3_class(lm_pipeline, "ml_pipeline")
   expect_equal(lm_pipeline$inner_model, manual_model)
   expect_true(is.function(lm_pipeline$predict))
   expect_equal(lm_pipeline$predict(data), manual_pred)
-  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[5])
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[4])
 })
 
 
@@ -390,12 +392,13 @@ test_that("pipeline automatically handles unexpected methods", {
     pred_model = predict(manual_model, df),
     pred_eruptions = data.frame(pred_eruptions = predict(manual_model, df) * sd(df$eruptions) + mean(df$eruptions))
   )
+  manual_pred[["y"]] <- NULL
 
   expect_s3_class(lm_pipeline, "ml_pipeline")
   expect_equal(lm_pipeline$inner_model, manual_model)
   expect_true(is.function(lm_pipeline$predict))
   expect_equal(lm_pipeline$predict(data), manual_pred)
-  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[5])
+  expect_equal(lm_pipeline$predict(data, verbose = FALSE), manual_pred[4])
 })
 
 
@@ -485,7 +488,7 @@ test_that("predict.ml_pipeline generates non-verbose predictions for a pipeline"
   predictions <- predict(lm_pipeline, data)
 
   # assert
-  result <- lm_pipeline$predict(data)[[6]]
+  result <- lm_pipeline$predict(data)[[5]]
   expect_equal(predictions, result)
 })
 
