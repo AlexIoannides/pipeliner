@@ -266,9 +266,7 @@ pipeline <- function(.data, ...) {
     verbose_output <-
       full_pipeline$inv_transform_response(
         predict_model(inner_model)(
-          full_pipeline$transform_response(
-            full_pipeline$transform_features(df)
-          ),
+          full_pipeline$transform_features(df),
           pred_var,
           ...
         )
